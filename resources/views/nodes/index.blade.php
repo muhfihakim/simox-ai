@@ -298,32 +298,32 @@
                         <table class="table dense-table" style="margin: 0; background: transparent;">
                             <tbody>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <td class="text-muted" style="width: 40%; padding: 12px;">Status Sistem</td>
-                                    <td style="padding: 12px;"><strong id="detail_status">-</strong></td>
+                                    <td class="text-muted" style="width: 50%; padding: 12px;">Status Sistem</td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_status">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Versi Proxmox</td>
-                                    <td style="padding: 12px;"><strong id="detail_versi_proxmox">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_versi_proxmox">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Total CPU Cores</td>
-                                    <td style="padding: 12px;"><strong id="detail_kapasitas_cpu">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_kapasitas_cpu">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Total RAM</td>
-                                    <td style="padding: 12px;"><strong id="detail_kapasitas_ram">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_kapasitas_ram">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Storage Fisik</td>
-                                    <td style="padding: 12px;"><strong id="detail_storage_fisik">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_storage_fisik">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Tahun Pembelian</td>
-                                    <td style="padding: 12px;"><strong id="detail_tahun_pembelian">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_tahun_pembelian">-</strong></td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted" style="padding: 12px;">Lokasi Rak</td>
-                                    <td style="padding: 12px;"><strong id="detail_lokasi_rak">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_lokasi_rak">-</strong></td>
                                 </tr>
                             </tbody>
                         </table>

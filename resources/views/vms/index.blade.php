@@ -294,36 +294,36 @@
                         <table class="table dense-table" style="margin: 0; background: transparent;">
                             <tbody>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <td class="text-muted" style="width: 40%; padding: 12px;">Status VM</td>
-                                    <td style="padding: 12px;"><strong id="detail_status">-</strong></td>
+                                    <td class="text-muted" style="width: 50%; padding: 12px;">Status VM</td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_status">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">OS Distro</td>
-                                    <td style="padding: 12px;"><strong id="detail_os_distro">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_os_distro">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Node Induk</td>
-                                    <td style="padding: 12px;"><strong id="detail_node">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_node">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Fungsi Layanan</td>
-                                    <td style="padding: 12px;"><strong id="detail_fungsi">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_fungsi">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Alokasi CPU</td>
-                                    <td style="padding: 12px;"><strong id="detail_cpu">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_cpu">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Alokasi RAM</td>
-                                    <td style="padding: 12px;"><strong id="detail_ram">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_ram">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Alokasi Disk</td>
-                                    <td style="padding: 12px;"><strong id="detail_disk">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_disk">-</strong></td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted" style="padding: 12px;">VLAN</td>
-                                    <td style="padding: 12px;"><strong id="detail_vlan">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_vlan">-</strong></td>
                                 </tr>
                             </tbody>
                         </table>
