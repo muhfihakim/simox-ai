@@ -280,11 +280,13 @@
             </div>
             <div class="modal-body">
                 <div class="card p-3 mb-3 bg-dark" style="border: 1px solid rgba(255,255,255,0.1);">
-                    <div class="flex-align-center gap-3 mb-3 border-bottom pb-3">
-                        <i class="ph-fill ph-desktop text-primary" style="font-size: 2.5rem;"></i>
-                        <div>
-                            <h4 id="detail_hostname" style="margin: 0; font-size: 1.2rem;">-</h4>
-                            <span class="text-muted text-sm" id="detail_ip">-</span>
+                    <div class="text-center mb-4 border-bottom pb-4">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.03); margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <i class="ph-fill ph-desktop text-primary" style="font-size: 2.2rem;"></i>
+                        </div>
+                        <h4 id="detail_hostname" style="margin: 0; font-size: 1.4rem; font-weight: 600; letter-spacing: 0.5px;">-</h4>
+                        <div style="margin-top: 10px;">
+                            <span class="text-muted text-sm" id="detail_ip" style="background: rgba(255,255,255,0.05); padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: inline-flex; align-items: center; gap: 6px;"><i class="ph ph-wifi-high"></i> -</span>
                         </div>
                     </div>
                     
