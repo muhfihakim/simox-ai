@@ -97,12 +97,15 @@
                 </div>
             </div>
             <div class="flex-align-center gap-2">
-                <select id="nodeFilter" class="input-form" style="padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; height: auto;" onchange="filterItems()">
-                    <option value="">-- Filter Node --</option>
-                    @foreach($nodes as $n)
-                        <option value="{{ strtolower($n->nama_server) }}">{{ $n->nama_server }}</option>
-                    @endforeach
-                </select>
+                <div class="search-box-sm">
+                    <i class="ph ph-hard-drive"></i>
+                    <select id="nodeFilter" onchange="filterItems()" style="background: transparent; border: none; color: inherit; outline: none; padding-right: 1rem; cursor: pointer;">
+                        <option value="" style="background: #1e1e2f;">-- Filter Node --</option>
+                        @foreach($nodes as $n)
+                            <option value="{{ strtolower($n->nama_server) }}" style="background: #1e1e2f;">{{ $n->nama_server }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="search-box-sm">
                     <i class="ph ph-magnifying-glass"></i>
                     <input type="text" id="searchInput" placeholder="Cari Hostname / IP / Fungsi..." onkeyup="filterItems()">
