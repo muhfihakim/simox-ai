@@ -288,39 +288,43 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Status VM</span>
-                            <strong id="detail_status" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">OS Distro</span>
-                            <strong id="detail_os_distro" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Node Induk</span>
-                            <strong id="detail_node" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Fungsi Layanan</span>
-                            <strong id="detail_fungsi" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Alokasi CPU</span>
-                            <strong id="detail_cpu" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Alokasi RAM</span>
-                            <strong id="detail_ram" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Alokasi Disk</span>
-                            <strong id="detail_disk" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">VLAN</span>
-                            <strong id="detail_vlan" style="font-size: 0.95rem;">-</strong>
-                        </div>
+                    <div class="table-responsive" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                        <table class="table dense-table" style="margin: 0; background: transparent;">
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="width: 40%; padding: 12px;">Status VM</td>
+                                    <td style="padding: 12px;"><strong id="detail_status">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">OS Distro</td>
+                                    <td style="padding: 12px;"><strong id="detail_os_distro">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Node Induk</td>
+                                    <td style="padding: 12px;"><strong id="detail_node">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Fungsi Layanan</td>
+                                    <td style="padding: 12px;"><strong id="detail_fungsi">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Alokasi CPU</td>
+                                    <td style="padding: 12px;"><strong id="detail_cpu">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Alokasi RAM</td>
+                                    <td style="padding: 12px;"><strong id="detail_ram">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Alokasi Disk</td>
+                                    <td style="padding: 12px;"><strong id="detail_disk">-</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted" style="padding: 12px;">VLAN</td>
+                                    <td style="padding: 12px;"><strong id="detail_vlan">-</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

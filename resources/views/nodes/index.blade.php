@@ -174,7 +174,7 @@
                     </div>
                 </div>
                 <div class="card-footer flex-between gap-2">
-                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;" onclick="openDetailModal({{ json_encode($node) }})"><i class="ph ph-info"></i> Detail</button>
+                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;" onclick="openDetailModal({{ json_encode($node) }})"><i class="ph ph-info"></i> Detail Data</button>
                     <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
                     <form action="{{ route('nodes.destroy', $node->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
                         @csrf
@@ -292,35 +292,39 @@
                         </div>
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Status Sistem</span>
-                            <strong id="detail_status" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Versi Proxmox</span>
-                            <strong id="detail_versi_proxmox" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Total CPU Cores</span>
-                            <strong id="detail_kapasitas_cpu" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Total RAM</span>
-                            <strong id="detail_kapasitas_ram" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Storage Fisik</span>
-                            <strong id="detail_storage_fisik" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Tahun Pembelian</span>
-                            <strong id="detail_tahun_pembelian" style="font-size: 0.95rem;">-</strong>
-                        </div>
-                        <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <span class="text-xs text-muted d-block mb-1">Lokasi Rak</span>
-                            <strong id="detail_lokasi_rak" style="font-size: 0.95rem;">-</strong>
-                        </div>
+                    <div class="table-responsive" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+                        <table class="table dense-table" style="margin: 0; background: transparent;">
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="width: 40%; padding: 12px;">Status Sistem</td>
+                                    <td style="padding: 12px;"><strong id="detail_status">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Versi Proxmox</td>
+                                    <td style="padding: 12px;"><strong id="detail_versi_proxmox">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Total CPU Cores</td>
+                                    <td style="padding: 12px;"><strong id="detail_kapasitas_cpu">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Total RAM</td>
+                                    <td style="padding: 12px;"><strong id="detail_kapasitas_ram">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Storage Fisik</td>
+                                    <td style="padding: 12px;"><strong id="detail_storage_fisik">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="padding: 12px;">Tahun Pembelian</td>
+                                    <td style="padding: 12px;"><strong id="detail_tahun_pembelian">-</strong></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted" style="padding: 12px;">Lokasi Rak</td>
+                                    <td style="padding: 12px;"><strong id="detail_lokasi_rak">-</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
