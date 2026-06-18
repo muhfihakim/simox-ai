@@ -1,4 +1,11 @@
  <!-- Topbar -->
+ <style>
+    @media (max-width: 768px) {
+        .topbar .user-info { display: none !important; }
+        .topbar .user-profile-trigger .ph-caret-down { display: none !important; }
+        .topbar .user-profile-trigger { gap: 0 !important; }
+    }
+ </style>
  <header class="topbar">
      <div class="topbar-left">
          <button class="icon-btn menu-btn" id="toggleSidebar">
