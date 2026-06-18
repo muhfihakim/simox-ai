@@ -42,9 +42,9 @@
             <div class="flex-align-center gap-2">
                 <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar Pengguna</h3>
                 <div class="flex-align-center" style="gap: 8px;">
-                    <button class="view-toggle-btn active" id="btnGrid" onclick="toggleView('grid')"
+                    <button class="view-toggle-btn" id="btnGrid" onclick="toggleView('grid')"
                         title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
-                    <button class="view-toggle-btn" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i
+                    <button class="view-toggle-btn active" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i
                             class="ph ph-list"></i></button>
                 </div>
             </div>
@@ -75,7 +75,7 @@
             }
         </style>
         <div class="content-grid" id="cardsContainer"
-            style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
+            style="display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
 
             @foreach ($users as $user)
                 <div class="card searchable-item"
@@ -120,7 +120,7 @@
         </div>
 
         <!-- Users Data Table -->
-        <div class="card mb-4" id="tableContainer" style="display: none;">
+        <div class="card mb-4" id="tableContainer" style="display: block;">
             <div class="card-header flex-between flex-wrap gap-2">
                 <h3 class="card-title">Tabel Detail Pengguna</h3>
             </div>
