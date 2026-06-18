@@ -89,12 +89,23 @@
 
         <!-- Top Resource VMs (Grid) -->
         <div class="flex-between mb-2 mt-4 flex-wrap gap-2">
-            <h3 class="card-title" style="font-size: 1rem;">Daftar VM</h3>
+            <div class="flex-align-center gap-2">
+                <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar VM</h3>
+                <div class="flex-align-center gap-1">
+                    <button class="view-toggle-btn active" id="btnGrid" onclick="toggleView('grid')" title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
+                    <button class="view-toggle-btn" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i class="ph ph-list"></i></button>
+                </div>
+            </div>
             <div class="search-box-sm">
                 <i class="ph ph-magnifying-glass"></i>
                 <input type="text" id="searchInput" placeholder="Cari Hostname / IP / Fungsi..." onkeyup="filterItems()">
             </div>
         </div>
+        <style>
+            .view-toggle-btn { padding: 4px 8px; border-radius: 6px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+            .view-toggle-btn.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
+            .view-toggle-btn:hover:not(.active) { background: rgba(255,255,255,0.05); }
+        </style>
         <div class="content-grid" id="cardsContainer"
             style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
 
@@ -149,7 +160,7 @@
                     </div>
                 </div>
                 <div class="card-footer flex-between gap-2">
-                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;"><i
+                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;" onclick="openDetailModal({{ json_encode($vm) }})"><i
                             class="ph ph-info"></i> Detail Data</button>
                     <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($vm) }})"><i
                             class="ph ph-pencil-simple"></i></button>
@@ -165,7 +176,7 @@
         </div>
 
         <!-- VM Data Table -->
-        <div class="card mb-4">
+        <div class="card mb-4" id="tableContainer" style="display: none;">
             <div class="card-header flex-between flex-wrap gap-2">
                 <h3 class="card-title">Tabel Detail Virtual Machine</h3>
             </div>
@@ -258,6 +269,65 @@
             </div>
         </div>
         @endif
+    </div>
+
+    <!-- Modal Template for Detail VM -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header flex-between mb-3 border-bottom pb-2">
+                <h3 class="modal-title">Detail Spesifikasi VM</h3>
+                <button type="button" class="icon-btn close-modal" onclick="closeDetailModal()"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="card p-3 mb-3 bg-dark" style="border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="flex-align-center gap-3 mb-3 border-bottom pb-3">
+                        <i class="ph-fill ph-desktop text-primary" style="font-size: 2.5rem;"></i>
+                        <div>
+                            <h4 id="detail_hostname" style="margin: 0; font-size: 1.2rem;">-</h4>
+                            <span class="text-muted text-sm" id="detail_ip">-</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Status VM</span>
+                            <strong id="detail_status">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">OS Distro</span>
+                            <strong id="detail_os_distro">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Node Induk</span>
+                            <strong id="detail_node">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Fungsi Layanan</span>
+                            <strong id="detail_fungsi">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Alokasi CPU</span>
+                            <strong id="detail_cpu">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Alokasi RAM</span>
+                            <strong id="detail_ram">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Alokasi Disk</span>
+                            <strong id="detail_disk">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">VLAN</span>
+                            <strong id="detail_vlan">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex-end pt-2 border-top">
+                <button type="button" class="btn btn-outline" onclick="closeDetailModal()">Tutup</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Template for Add/Edit VM -->
@@ -395,6 +465,50 @@
                     tableItems[i].style.display = "none";
                 }
             }
+        }
+
+        function toggleView(view) {
+            const cards = document.getElementById('cardsContainer');
+            const table = document.getElementById('tableContainer');
+            const btnGrid = document.getElementById('btnGrid');
+            const btnList = document.getElementById('btnList');
+
+            if (view === 'grid') {
+                cards.style.display = 'grid';
+                table.style.display = 'none';
+                btnGrid.classList.add('active');
+                btnList.classList.remove('active');
+            } else {
+                cards.style.display = 'none';
+                table.style.display = 'block';
+                btnList.classList.add('active');
+                btnGrid.classList.remove('active');
+            }
+        }
+
+        const detailModal = document.getElementById('detailModal');
+        function openDetailModal(vm) {
+            document.getElementById('detail_hostname').innerText = vm.hostname || '-';
+            document.getElementById('detail_ip').innerText = vm.ip_public_private || '-';
+            
+            let statusEl = document.getElementById('detail_status');
+            statusEl.innerText = vm.status || '-';
+            statusEl.className = vm.status === 'Running' ? 'text-success' : 'text-danger';
+
+            document.getElementById('detail_os_distro').innerText = vm.os_distro || '-';
+            document.getElementById('detail_node').innerText = vm.server_fisik ? vm.server_fisik.nama_server : '-';
+            document.getElementById('detail_fungsi').innerText = vm.fungsi_layanan || '-';
+            
+            document.getElementById('detail_cpu').innerText = (vm.allocated_cpu || 0) + ' Cores';
+            document.getElementById('detail_ram').innerText = (vm.allocated_ram_gb || 0) + ' GB';
+            document.getElementById('detail_disk').innerText = (vm.allocated_disk_gb || 0) + ' GB';
+            document.getElementById('detail_vlan').innerText = vm.vlan || '-';
+
+            detailModal.classList.add('active');
+        }
+
+        function closeDetailModal() {
+            detailModal.classList.remove('active');
         }
     </script>
 </x-layouts.app>

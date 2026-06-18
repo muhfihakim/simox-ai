@@ -92,12 +92,23 @@
 
         <!-- Node Cards (Grid) -->
         <div class="flex-between mb-2 mt-4 flex-wrap gap-2">
-            <h3 class="card-title" style="font-size: 1rem;">Daftar Node</h3>
+            <div class="flex-align-center gap-2">
+                <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar Node</h3>
+                <div class="flex-align-center gap-1">
+                    <button class="view-toggle-btn active" id="btnGrid" onclick="toggleView('grid')" title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
+                    <button class="view-toggle-btn" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i class="ph ph-list"></i></button>
+                </div>
+            </div>
             <div class="search-box-sm">
                 <i class="ph ph-magnifying-glass"></i>
                 <input type="text" id="searchInput" placeholder="Cari Nama / IP..." onkeyup="filterItems()">
             </div>
         </div>
+        <style>
+            .view-toggle-btn { padding: 4px 8px; border-radius: 6px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+            .view-toggle-btn.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
+            .view-toggle-btn:hover:not(.active) { background: rgba(255,255,255,0.05); }
+        </style>
         <div class="content-grid" id="cardsContainer"
             style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
 
@@ -163,7 +174,7 @@
                     </div>
                 </div>
                 <div class="card-footer flex-between gap-2">
-                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;"><i class="ph ph-info"></i> Detail</button>
+                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;" onclick="openDetailModal({{ json_encode($node) }})"><i class="ph ph-info"></i> Detail</button>
                     <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
                     <form action="{{ route('nodes.destroy', $node->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
                         @csrf
@@ -177,7 +188,7 @@
         </div>
 
         <!-- Cluster Data Table -->
-        <div class="card mb-4">
+        <div class="card mb-4" id="tableContainer" style="display: none;">
             <div class="card-header flex-between flex-wrap gap-2">
                 <h3 class="card-title">Buku Detail Node</h3>
             </div>
@@ -262,6 +273,61 @@
         </div>
         @endif
 
+    </div>
+
+    <!-- Modal Template for Detail Node -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header flex-between mb-3 border-bottom pb-2">
+                <h3 class="modal-title">Detail Spesifikasi Node</h3>
+                <button type="button" class="icon-btn close-modal" onclick="closeDetailModal()"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="card p-3 mb-3 bg-dark" style="border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="flex-align-center gap-3 mb-3 border-bottom pb-3">
+                        <i class="ph-fill ph-hard-drive text-primary" style="font-size: 2.5rem;"></i>
+                        <div>
+                            <h4 id="detail_nama_server" style="margin: 0; font-size: 1.2rem;">-</h4>
+                            <span class="text-muted text-sm" id="detail_alamat_ip">-</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Status Sistem</span>
+                            <strong id="detail_status">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Versi Proxmox</span>
+                            <strong id="detail_versi_proxmox">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Total CPU Cores</span>
+                            <strong id="detail_kapasitas_cpu">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Total RAM</span>
+                            <strong id="detail_kapasitas_ram">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Storage Fisik</span>
+                            <strong id="detail_storage_fisik">-</strong>
+                        </div>
+                        <div>
+                            <span class="text-xs text-muted d-block mb-1">Tahun Pembelian</span>
+                            <strong id="detail_tahun_pembelian">-</strong>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <span class="text-xs text-muted d-block mb-1">Lokasi Rak</span>
+                            <strong id="detail_lokasi_rak">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex-end pt-2 border-top">
+                <button type="button" class="btn btn-outline" onclick="closeDetailModal()">Tutup</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Template for Add Node -->
@@ -387,6 +453,48 @@
                     tableItems[i].style.display = "none";
                 }
             }
+        }
+
+        function toggleView(view) {
+            const cards = document.getElementById('cardsContainer');
+            const table = document.getElementById('tableContainer');
+            const btnGrid = document.getElementById('btnGrid');
+            const btnList = document.getElementById('btnList');
+
+            if (view === 'grid') {
+                cards.style.display = 'grid';
+                table.style.display = 'none';
+                btnGrid.classList.add('active');
+                btnList.classList.remove('active');
+            } else {
+                cards.style.display = 'none';
+                table.style.display = 'block';
+                btnList.classList.add('active');
+                btnGrid.classList.remove('active');
+            }
+        }
+
+        const detailModal = document.getElementById('detailModal');
+        function openDetailModal(node) {
+            document.getElementById('detail_nama_server').innerText = node.nama_server || '-';
+            document.getElementById('detail_alamat_ip').innerText = node.alamat_ip || '-';
+            
+            let statusEl = document.getElementById('detail_status');
+            statusEl.innerText = node.status || '-';
+            statusEl.className = node.status === 'Online' ? 'text-success' : 'text-danger';
+
+            document.getElementById('detail_versi_proxmox').innerText = node.versi_proxmox || '-';
+            document.getElementById('detail_kapasitas_cpu').innerText = (node.kapasitas_cpu || 0) + ' Cores';
+            document.getElementById('detail_kapasitas_ram').innerText = (node.kapasitas_ram || 0) + ' GB';
+            document.getElementById('detail_storage_fisik').innerText = (node.storage_fisik || 0) + ' GB';
+            document.getElementById('detail_tahun_pembelian').innerText = node.tahun_pembelian || '-';
+            document.getElementById('detail_lokasi_rak').innerText = node.lokasi_rak || '-';
+
+            detailModal.classList.add('active');
+        }
+
+        function closeDetailModal() {
+            detailModal.classList.remove('active');
         }
     </script>
 </x-layouts.app>
