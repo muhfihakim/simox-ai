@@ -100,9 +100,9 @@
                 <div class="search-box-sm">
                     <i class="ph ph-hard-drive"></i>
                     <select id="nodeFilter" onchange="filterItems()" style="background: transparent; border: none; color: inherit; outline: none; padding-right: 1rem; cursor: pointer;">
-                        <option value="" style="background: #1e1e2f;">-- Filter Node --</option>
+                        <option value="" style="background: #ffffff; color: #1a1a2e;">-- Filter Node --</option>
                         @foreach($nodes as $n)
-                            <option value="{{ strtolower($n->nama_server) }}" style="background: #1e1e2f;">{{ $n->nama_server }}</option>
+                            <option value="{{ strtolower($n->nama_server) }}" style="background: #ffffff; color: #1a1a2e;">{{ $n->nama_server }}</option>
                         @endforeach
                     </select>
                 </div>
