@@ -165,6 +165,65 @@
 
         </div>
 
+        <!-- Cluster Data Table -->
+        <div class="card mb-4">
+            <div class="card-header flex-between flex-wrap gap-2">
+                <h3 class="card-title">Buku Detail Node</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table dense-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Server</th>
+                                <th>Versi Proxmox</th>
+                                <th>IP Manajeman</th>
+                                <th>CPU (Cores)</th>
+                                <th>RAM (GB)</th>
+                                <th>Storage Fisik</th>
+                                <th>Lokasi Rak</th>
+                                <th>Status</th>
+                                <th class="text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($nodes as $node)
+                            <tr class="searchable-table-item" data-search="{{ strtolower($node->nama_server . ' ' . $node->alamat_ip) }}">
+                                <td><strong>{{ $node->nama_server }}</strong></td>
+                                <td>{{ $node->versi_proxmox }}</td>
+                                <td>{{ $node->alamat_ip }}</td>
+                                <td>{{ $node->kapasitas_cpu }} Cores</td>
+                                <td>{{ $node->kapasitas_ram }} GB</td>
+                                <td>{{ $node->storage_fisik }}</td>
+                                <td>{{ $node->lokasi_rak }}</td>
+                                <td>
+                                    @if($node->status == 'Online')
+                                        <span class="status-badge success"><span class="dot"></span>Online</span>
+                                    @else
+                                        <span class="status-badge danger"><span class="dot"></span>{{ $node->status }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-right">
+                                    <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
+                                    <form action="{{ route('nodes.destroy', $node->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="icon-btn-sm text-danger" title="Hapus Data"><i class="ph ph-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                            @if($nodes->isEmpty())
+                            <tr>
+                                <td colspan="9" class="text-center text-muted" style="padding: 2rem;">Belum ada data server node.</td>
+                            </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         @if($nodes->hasPages())
         <div class="card-footer flex-between" style="background: transparent; border: none; padding: 0;">
             <div class="pagination-info text-muted">Menampilkan {{ $nodes->firstItem() }}-{{ $nodes->lastItem() }} dari {{ $nodes->total() }} data</div>
@@ -195,11 +254,11 @@
     </div>
 
     <!-- Modal Template for Add Node -->
-    <div class="modal-overlay" id="createModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div class="modal" style="background: var(--bg-card); width: 100%; max-width: 600px; border-radius: 12px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+    <div class="modal-overlay" id="createModal">
+        <div class="modal" style="max-width: 600px;">
             <div class="modal-header flex-between mb-3 border-bottom pb-2">
                 <h3 class="modal-title" id="modalTitle">Catat Data Server Node Baru</h3>
-                <button type="button" class="icon-btn close-modal" onclick="closeModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-color);"><i class="ph ph-x"></i></button>
+                <button type="button" class="icon-btn close-modal" onclick="closeModal()"><i class="ph ph-x"></i></button>
             </div>
             <form id="nodeForm" action="{{ route('nodes.store') }}" method="POST">
                 @csrf
@@ -270,11 +329,11 @@
             nodeForm.action = '{{ route('nodes.store') }}';
             formMethod.value = 'POST';
             nodeForm.reset();
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         });
 
         function closeModal() {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
         }
 
         function openEditModal(node) {
@@ -292,12 +351,13 @@
             document.getElementById('lokasi_rak').value = node.lokasi_rak || '';
             document.getElementById('status').value = node.status || 'Online';
 
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         }
 
         function filterItems() {
             let input = document.getElementById('searchInput').value.toLowerCase();
             let items = document.getElementsByClassName('searchable-item');
+            let tableItems = document.getElementsByClassName('searchable-table-item');
 
             for (let i = 0; i < items.length; i++) {
                 let text = items[i].getAttribute('data-search');
@@ -305,6 +365,15 @@
                     items[i].style.display = "";
                 } else {
                     items[i].style.display = "none";
+                }
+            }
+
+            for (let i = 0; i < tableItems.length; i++) {
+                let text = tableItems[i].getAttribute('data-search');
+                if (text.includes(input)) {
+                    tableItems[i].style.display = "";
+                } else {
+                    tableItems[i].style.display = "none";
                 }
             }
         }

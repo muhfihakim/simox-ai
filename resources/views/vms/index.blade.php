@@ -164,6 +164,74 @@
 
         </div>
 
+        <!-- VM Data Table -->
+        <div class="card mb-4">
+            <div class="card-header flex-between flex-wrap gap-2">
+                <h3 class="card-title">Tabel Detail Virtual Machine</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table dense-table">
+                        <thead>
+                            <tr>
+                                <th>Hostname</th>
+                                <th>OS Distro</th>
+                                <th>IP Address</th>
+                                <th>Node Induk</th>
+                                <th>CPU (Cores)</th>
+                                <th>RAM (GB)</th>
+                                <th>Fungsi</th>
+                                <th>Status</th>
+                                <th class="text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($vms as $vm)
+                            <tr class="searchable-table-item" data-search="{{ strtolower($vm->hostname . ' ' . $vm->ip_public_private . ' ' . $vm->fungsi_layanan) }}">
+                                <td>
+                                    <div class="flex-align-center gap-2">
+                                        @if(stripos($vm->os_distro, 'windows') !== false)
+                                            <i class="ph-fill ph-windows-logo text-info"></i>
+                                        @else
+                                            <i class="ph-fill ph-linux-logo text-muted"></i>
+                                        @endif
+                                        <strong>{{ $vm->hostname }}</strong>
+                                    </div>
+                                </td>
+                                <td>{{ $vm->os_distro }}</td>
+                                <td>{{ $vm->ip_public_private }}</td>
+                                <td>{{ $vm->serverFisik->nama_server ?? '-' }}</td>
+                                <td>{{ $vm->allocated_cpu }} Cores</td>
+                                <td>{{ $vm->allocated_ram_gb }} GB</td>
+                                <td><span class="badge bg-purple-light text-purple">{{ $vm->fungsi_layanan }}</span></td>
+                                <td>
+                                    @if($vm->status == 'Running')
+                                        <span class="status-badge success"><span class="dot"></span>Aktif</span>
+                                    @else
+                                        <span class="status-badge danger"><span class="dot"></span>{{ $vm->status }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-right">
+                                    <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($vm) }})"><i class="ph ph-pencil-simple"></i></button>
+                                    <form action="{{ route('vms.destroy', $vm->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus VM ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="icon-btn-sm text-danger" title="Hapus Data"><i class="ph ph-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                            @if($vms->isEmpty())
+                            <tr>
+                                <td colspan="9" class="text-center text-muted" style="padding: 2rem;">Belum ada data virtual machine.</td>
+                            </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         @if($vms->hasPages())
         <div class="card-footer flex-between" style="background: transparent; border: none; padding: 0;">
             <div class="pagination-info text-muted">Menampilkan {{ $vms->firstItem() }}-{{ $vms->lastItem() }} dari {{ $vms->total() }} data</div>
@@ -193,11 +261,11 @@
     </div>
 
     <!-- Modal Template for Add/Edit VM -->
-    <div class="modal-overlay" id="createModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div class="modal" style="background: var(--bg-card); width: 100%; max-width: 600px; border-radius: 12px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+    <div class="modal-overlay" id="createModal">
+        <div class="modal" style="max-width: 600px;">
             <div class="modal-header flex-between mb-3 border-bottom pb-2">
                 <h3 class="modal-title" id="modalTitle">Catat Data Virtual Machine</h3>
-                <button type="button" class="icon-btn close-modal" onclick="closeModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-color);"><i class="ph ph-x"></i></button>
+                <button type="button" class="icon-btn close-modal" onclick="closeModal()"><i class="ph ph-x"></i></button>
             </div>
             <form id="vmForm" action="{{ route('vms.store') }}" method="POST">
                 @csrf
@@ -279,11 +347,11 @@
             vmForm.action = '{{ route('vms.store') }}';
             formMethod.value = 'POST';
             vmForm.reset();
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         });
 
         function closeModal() {
-            modal.style.display = 'none';
+            modal.classList.remove('active');
         }
 
         function openEditModal(vm) {
@@ -302,12 +370,13 @@
             document.getElementById('vlan').value = vm.vlan || '';
             document.getElementById('status').value = vm.status;
 
-            modal.style.display = 'flex';
+            modal.classList.add('active');
         }
 
         function filterItems() {
             let input = document.getElementById('searchInput').value.toLowerCase();
             let items = document.getElementsByClassName('searchable-item');
+            let tableItems = document.getElementsByClassName('searchable-table-item');
 
             for (let i = 0; i < items.length; i++) {
                 let text = items[i].getAttribute('data-search');
@@ -315,6 +384,15 @@
                     items[i].style.display = "";
                 } else {
                     items[i].style.display = "none";
+                }
+            }
+
+            for (let i = 0; i < tableItems.length; i++) {
+                let text = tableItems[i].getAttribute('data-search');
+                if (text.includes(input)) {
+                    tableItems[i].style.display = "";
+                } else {
+                    tableItems[i].style.display = "none";
                 }
             }
         }
