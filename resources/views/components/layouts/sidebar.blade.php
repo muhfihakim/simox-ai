@@ -9,16 +9,16 @@
 
     <nav class="sidebar-nav">
         <span class="nav-label">UTAMA</span>
-        <a href="{{ route('dashboard.index') }}" class="nav-item active"><i class="ph ph-squares-four"></i>
+        <a href="{{ route('dashboard.index') }}" class="nav-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}"><i class="ph ph-squares-four"></i>
             <span>Dasbor</span></a>
-        <a href="{{ route('nodes.index') }}" class="nav-item"><i class="ph ph-hard-drive"></i> <span>Data
+        <a href="{{ route('nodes.index') }}" class="nav-item {{ request()->routeIs('nodes.*') ? 'active' : '' }}"><i class="ph ph-hard-drive"></i> <span>Data
                 Node</span></a>
-        <a href="{{ route('vms.index') }}" class="nav-item"><i class="ph ph-desktop"></i> <span>Inventaris VM</span></a>
-        <a href="{{ route('lxc.index') }}" class="nav-item"><i class="ph ph-box-arrow-down"></i> <span>Inventaris
+        <a href="{{ route('vms.index') }}" class="nav-item {{ request()->routeIs('vms.*') ? 'active' : '' }}"><i class="ph ph-desktop"></i> <span>Inventaris VM</span></a>
+        <a href="{{ route('lxc.index') }}" class="nav-item {{ request()->routeIs('lxc.*') ? 'active' : '' }}"><i class="ph ph-box-arrow-down"></i> <span>Inventaris
                 LXC</span></a>
         <a href="#" class="nav-item"><i class="ph ph-database"></i> <span>Penyimpanan</span></a>
         <a href="#" class="nav-item"><i class="ph ph-network"></i> <span>Jaringan IP</span></a>
-        <a href="{{ route('reports.index') }}" class="nav-item"><i class="ph ph-chart-pie-slice"></i> <span>Laporan
+        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}"><i class="ph ph-chart-pie-slice"></i> <span>Laporan
                 Pemakaian</span></a>
 
         <span class="nav-label mt-4">INTEGRASI</span>
