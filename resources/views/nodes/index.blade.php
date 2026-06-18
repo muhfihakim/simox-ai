@@ -7,13 +7,13 @@
                 <p>Inventaris server fisik yang menyusun kluster Diskominfo Subang.</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-outline" onclick="window.location.reload()"><i
-                        class="ph ph-arrows-clockwise"></i> Sinkronisasi</button>
+                <button class="btn btn-outline" onclick="window.location.reload()"><i class="ph ph-arrows-clockwise"></i>
+                    Sinkronisasi</button>
                 <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat Node Baru</button>
             </div>
         </div>
 
-        @if(session('success'))
+        @if (session('success'))
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
                     showToast("{{ session('success') }}", "success");
@@ -21,10 +21,10 @@
             </script>
         @endif
 
-        @if($errors->any())
+        @if ($errors->any())
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    @foreach($errors->all() as $error)
+                    @foreach ($errors->all() as $error)
                         showToast("{{ $error }}", "error");
                     @endforeach
                 });
@@ -42,7 +42,7 @@
                     <div class="stat-icon bg-blue"><i class="ph ph-hard-drives"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success">{{ $allNodes->where('status', 'Online')->count() }} Online</span> &bull; 
+                    <span class="text-success">{{ $allNodes->where('status', 'Online')->count() }} Online</span> &bull;
                     <span class="text-danger">{{ $allNodes->where('status', '!=', 'Online')->count() }} Offline</span>
                 </div>
             </div>
@@ -95,8 +95,10 @@
             <div class="flex-align-center gap-2">
                 <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar Node</h3>
                 <div class="flex-align-center" style="gap: 8px;">
-                    <button class="view-toggle-btn active" id="btnGrid" onclick="toggleView('grid')" title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
-                    <button class="view-toggle-btn" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i class="ph ph-list"></i></button>
+                    <button class="view-toggle-btn active" id="btnGrid" onclick="toggleView('grid')"
+                        title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
+                    <button class="view-toggle-btn" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i
+                            class="ph ph-list"></i></button>
                 </div>
             </div>
             <div class="search-box-sm">
@@ -105,84 +107,116 @@
             </div>
         </div>
         <style>
-            .view-toggle-btn { padding: 4px 8px; border-radius: 6px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
-            .view-toggle-btn.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
-            .view-toggle-btn:hover:not(.active) { background: rgba(255,255,255,0.05); }
+            .view-toggle-btn {
+                padding: 4px 8px;
+                border-radius: 6px;
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--text-muted);
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .view-toggle-btn.active {
+                background: var(--primary-light);
+                color: var(--primary);
+                border-color: var(--primary-light);
+            }
+
+            .view-toggle-btn:hover:not(.active) {
+                background: rgba(255, 255, 255, 0.05);
+            }
         </style>
         <div class="content-grid" id="cardsContainer"
             style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
 
-            @foreach($nodes as $node)
-            <div class="card searchable-item" data-search="{{ strtolower($node->nama_server . ' ' . $node->alamat_ip) }}">
-                <div class="card-header flex-between">
-                    <div class="flex-align-center gap-2">
-                        <i class="ph-fill ph-hard-drive {{ $node->status == 'Online' ? 'text-primary' : 'text-muted' }}" style="font-size: 1.4rem;"></i>
-                        <div>
-                            <h3 class="card-title {{ $node->status != 'Online' ? 'text-muted' : '' }}">
-                                {{ $node->nama_server }} 
-                                @if($node->is_master)
-                                <span class="badge bg-success" style="font-size:0.6rem; margin-left:4px;">Master</span>
-                                @endif
-                            </h3>
+            @foreach ($nodes as $node)
+                <div class="card searchable-item"
+                    data-search="{{ strtolower($node->nama_server . ' ' . $node->alamat_ip) }}">
+                    <div class="card-header flex-between">
+                        <div class="flex-align-center gap-2">
+                            <i class="ph-fill ph-hard-drive {{ $node->status == 'Online' ? 'text-primary' : 'text-muted' }}"
+                                style="font-size: 1.4rem;"></i>
+                            <div>
+                                <h3 class="card-title {{ $node->status != 'Online' ? 'text-muted' : '' }}">
+                                    {{ $node->nama_server }}
+                                    @if ($node->is_master)
+                                        <span class="badge bg-success"
+                                            style="font-size:0.6rem; margin-left:4px;">Master</span>
+                                    @endif
+                                </h3>
+                            </div>
+                        </div>
+                        @if ($node->status == 'Online')
+                            <span class="status-badge success"><span class="dot"></span>Online</span>
+                        @else
+                            <span class="status-badge danger"><span class="dot"></span>{{ $node->status }}</span>
+                        @endif
+                    </div>
+                    <div class="card-body">
+                        @php
+                            $usedCpu = $node->virtualMachines->sum('allocated_cpu');
+                            $usedRam = $node->virtualMachines->sum('allocated_ram_gb');
+                            $usedDisk = $node->virtualMachines->sum('allocated_disk_gb');
+
+                            $cpuPct = $node->kapasitas_cpu > 0 ? min(100, ($usedCpu / $node->kapasitas_cpu) * 100) : 0;
+                            $ramPct = $node->kapasitas_ram > 0 ? min(100, ($usedRam / $node->kapasitas_ram) * 100) : 0;
+                            $diskCapacity = (int) $node->storage_fisik;
+                            $diskPct = $diskCapacity > 0 ? min(100, ($usedDisk / $diskCapacity) * 100) : 0;
+                        @endphp
+
+                        <div class="text-xs text-muted mb-4">Uptime Tercatat: {{ $node->uptime ?? '-' }}</div>
+
+                        <div class="resource-bar mb-2">
+                            <div class="flex-between text-xs mb-1">
+                                <span>Kapasitas CPU ({{ $usedCpu }} / {{ $node->kapasitas_cpu ?? 0 }}
+                                    Cores)</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar {{ $node->status == 'Online' ? 'bg-blue' : '' }}"
+                                    style="width: {{ $cpuPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-bar mb-2">
+                            <div class="flex-between text-xs mb-1">
+                                <span>Kapasitas RAM ({{ $usedRam }} / {{ $node->kapasitas_ram ?? 0 }} GB)</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar {{ $node->status == 'Online' ? 'bg-purple' : '' }}"
+                                    style="width: {{ $ramPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resource-bar">
+                            <div class="flex-between text-xs mb-1">
+                                <span>Storage Fisik ({{ $usedDisk }} / {{ $node->storage_fisik ?? 0 }} GB)</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar {{ $node->status == 'Online' ? 'bg-green' : '' }}"
+                                    style="width: {{ $diskPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    @if($node->status == 'Online')
-                        <span class="status-badge success"><span class="dot"></span>Online</span>
-                    @else
-                        <span class="status-badge danger"><span class="dot"></span>{{ $node->status }}</span>
-                    @endif
+                    <div class="card-footer flex-between gap-2">
+                        <button class="btn btn-sm btn-outline text-primary flex-grow-1"
+                            style="justify-content: center;" onclick="openDetailModal({{ json_encode($node) }})"><i
+                                class="ph ph-info"></i> Detail Data</button>
+                        <button class="icon-btn-sm text-warning" title="Edit Data"
+                            onclick="openEditModal({{ json_encode($node) }})"><i
+                                class="ph ph-pencil-simple"></i></button>
+                        <form action="{{ route('nodes.destroy', $node->id) }}" method="POST"
+                            style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="icon-btn-sm text-danger" title="Hapus Data"><i
+                                    class="ph ph-trash"></i></button>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-body">
-                    @php
-                        $usedCpu = $node->virtualMachines->sum('allocated_cpu');
-                        $usedRam = $node->virtualMachines->sum('allocated_ram_gb');
-                        $usedDisk = $node->virtualMachines->sum('allocated_disk_gb');
-                        
-                        $cpuPct = $node->kapasitas_cpu > 0 ? min(100, ($usedCpu / $node->kapasitas_cpu) * 100) : 0;
-                        $ramPct = $node->kapasitas_ram > 0 ? min(100, ($usedRam / $node->kapasitas_ram) * 100) : 0;
-                        $diskCapacity = (int) $node->storage_fisik;
-                        $diskPct = $diskCapacity > 0 ? min(100, ($usedDisk / $diskCapacity) * 100) : 0;
-                    @endphp
-
-                    <div class="text-xs text-muted mb-4">Uptime Tercatat: {{ $node->uptime ?? '-' }}</div>
-
-                    <div class="resource-bar mb-2">
-                        <div class="flex-between text-xs mb-1">
-                            <span>Kapasitas CPU ({{ $usedCpu }} / {{ $node->kapasitas_cpu ?? 0 }} Cores)</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-blue' : '' }}" style="width: {{ $cpuPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
-                        </div>
-                    </div>
-
-                    <div class="resource-bar mb-2">
-                        <div class="flex-between text-xs mb-1">
-                            <span>Kapasitas RAM ({{ $usedRam }} / {{ $node->kapasitas_ram ?? 0 }} GB)</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-purple' : '' }}" style="width: {{ $ramPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
-                        </div>
-                    </div>
-
-                    <div class="resource-bar">
-                        <div class="flex-between text-xs mb-1">
-                            <span>Storage Fisik ({{ $usedDisk }} / {{ $node->storage_fisik ?? 0 }} GB)</span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-green' : '' }}" style="width: {{ $diskPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer flex-between gap-2">
-                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;" onclick="openDetailModal({{ json_encode($node) }})"><i class="ph ph-info"></i> Detail Data</button>
-                    <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
-                    <form action="{{ route('nodes.destroy', $node->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="icon-btn-sm text-danger" title="Hapus Data"><i class="ph ph-trash"></i></button>
-                    </form>
-                </div>
-            </div>
             @endforeach
 
         </div>
@@ -190,7 +224,7 @@
         <!-- Cluster Data Table -->
         <div class="card mb-4" id="tableContainer" style="display: none;">
             <div class="card-header flex-between flex-wrap gap-2">
-                <h3 class="card-title">Buku Detail Node</h3>
+                <h3 class="card-title">Tabel Detail Node</h3>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -209,36 +243,45 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($nodes as $node)
-                            <tr class="searchable-table-item" data-search="{{ strtolower($node->nama_server . ' ' . $node->alamat_ip) }}">
-                                <td><strong>{{ $node->nama_server }}</strong></td>
-                                <td>{{ $node->versi_proxmox }}</td>
-                                <td>{{ $node->alamat_ip }}</td>
-                                <td>{{ $node->kapasitas_cpu }} Cores</td>
-                                <td>{{ $node->kapasitas_ram }} GB</td>
-                                <td>{{ $node->storage_fisik }} GB</td>
-                                <td>{{ $node->lokasi_rak }}</td>
-                                <td>
-                                    @if($node->status == 'Online')
-                                        <span class="status-badge success"><span class="dot"></span>Online</span>
-                                    @else
-                                        <span class="status-badge danger"><span class="dot"></span>{{ $node->status }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-right">
-                                    <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
-                                    <form action="{{ route('nodes.destroy', $node->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="icon-btn-sm text-danger" title="Hapus Data"><i class="ph ph-trash"></i></button>
-                                    </form>
-                                </td>
-                            </tr>
+                            @foreach ($nodes as $node)
+                                <tr class="searchable-table-item"
+                                    data-search="{{ strtolower($node->nama_server . ' ' . $node->alamat_ip) }}">
+                                    <td><strong>{{ $node->nama_server }}</strong></td>
+                                    <td>{{ $node->versi_proxmox }}</td>
+                                    <td>{{ $node->alamat_ip }}</td>
+                                    <td>{{ $node->kapasitas_cpu }} Cores</td>
+                                    <td>{{ $node->kapasitas_ram }} GB</td>
+                                    <td>{{ $node->storage_fisik }} GB</td>
+                                    <td>{{ $node->lokasi_rak }}</td>
+                                    <td>
+                                        @if ($node->status == 'Online')
+                                            <span class="status-badge success"><span
+                                                    class="dot"></span>Online</span>
+                                        @else
+                                            <span class="status-badge danger"><span
+                                                    class="dot"></span>{{ $node->status }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-right">
+                                        <button class="icon-btn-sm text-warning" title="Edit Data"
+                                            onclick="openEditModal({{ json_encode($node) }})"><i
+                                                class="ph ph-pencil-simple"></i></button>
+                                        <form action="{{ route('nodes.destroy', $node->id) }}" method="POST"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('Yakin ingin menghapus node ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="icon-btn-sm text-danger"
+                                                title="Hapus Data"><i class="ph ph-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
                             @endforeach
-                            @if($nodes->isEmpty())
-                            <tr>
-                                <td colspan="9" class="text-center text-muted" style="padding: 2rem;">Belum ada data server node.</td>
-                            </tr>
+                            @if ($nodes->isEmpty())
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted" style="padding: 2rem;">Belum
+                                        ada data server node.</td>
+                                </tr>
                             @endif
                         </tbody>
                     </table>
@@ -246,31 +289,33 @@
             </div>
         </div>
 
-        @if($nodes->hasPages())
-        <div class="card-footer flex-between" style="background: transparent; border: none; padding: 0;">
-            <div class="pagination-info text-muted">Menampilkan {{ $nodes->firstItem() }}-{{ $nodes->lastItem() }} dari {{ $nodes->total() }} data</div>
-            <div class="pagination flex-align-center gap-1">
-                @if ($nodes->onFirstPage())
-                    <button class="page-btn disabled" disabled><i class="ph ph-caret-left"></i></button>
-                @else
-                    <a href="{{ $nodes->previousPageUrl() }}" class="page-btn"><i class="ph ph-caret-left"></i></a>
-                @endif
-                
-                @foreach ($nodes->getUrlRange(1, $nodes->lastPage()) as $page => $url)
-                    @if ($page == $nodes->currentPage())
-                        <button class="page-btn active">{{ $page }}</button>
+        @if ($nodes->hasPages())
+            <div class="card-footer flex-between" style="background: transparent; border: none; padding: 0;">
+                <div class="pagination-info text-muted">Menampilkan
+                    {{ $nodes->firstItem() }}-{{ $nodes->lastItem() }} dari {{ $nodes->total() }} data</div>
+                <div class="pagination flex-align-center gap-1">
+                    @if ($nodes->onFirstPage())
+                        <button class="page-btn disabled" disabled><i class="ph ph-caret-left"></i></button>
                     @else
-                        <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                        <a href="{{ $nodes->previousPageUrl() }}" class="page-btn"><i
+                                class="ph ph-caret-left"></i></a>
                     @endif
-                @endforeach
 
-                @if ($nodes->hasMorePages())
-                    <a href="{{ $nodes->nextPageUrl() }}" class="page-btn"><i class="ph ph-caret-right"></i></a>
-                @else
-                    <button class="page-btn disabled" disabled><i class="ph ph-caret-right"></i></button>
-                @endif
+                    @foreach ($nodes->getUrlRange(1, $nodes->lastPage()) as $page => $url)
+                        @if ($page == $nodes->currentPage())
+                            <button class="page-btn active">{{ $page }}</button>
+                        @else
+                            <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if ($nodes->hasMorePages())
+                        <a href="{{ $nodes->nextPageUrl() }}" class="page-btn"><i class="ph ph-caret-right"></i></a>
+                    @else
+                        <button class="page-btn disabled" disabled><i class="ph ph-caret-right"></i></button>
+                    @endif
+                </div>
             </div>
-        </div>
         @endif
 
     </div>
@@ -280,50 +325,64 @@
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header flex-between mb-3 border-bottom pb-2">
                 <h3 class="modal-title">Detail Spesifikasi Node</h3>
-                <button type="button" class="icon-btn close-modal" onclick="closeDetailModal()"><i class="ph ph-x"></i></button>
+                <button type="button" class="icon-btn close-modal" onclick="closeDetailModal()"><i
+                        class="ph ph-x"></i></button>
             </div>
             <div class="modal-body">
                 <div class="card p-3 mb-3 bg-dark" style="border: 1px solid rgba(255,255,255,0.1);">
-                    <div class="mb-4 border-bottom pb-4" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.03); margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div class="mb-4 border-bottom pb-4"
+                        style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <div
+                            style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: rgba(255,255,255,0.03); margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                             <i class="ph-fill ph-hard-drive text-primary" style="font-size: 2.2rem;"></i>
                         </div>
-                        <h4 id="detail_nama_server" style="margin: 0; font-size: 1.4rem; font-weight: 600; letter-spacing: 0.5px;">-</h4>
+                        <h4 id="detail_nama_server"
+                            style="margin: 0; font-size: 1.4rem; font-weight: 600; letter-spacing: 0.5px;">-</h4>
                         <div style="margin-top: 10px;">
-                            <span class="text-muted text-sm" id="detail_alamat_ip" style="background: rgba(255,255,255,0.05); padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: inline-flex; align-items: center; gap: 6px;"><i class="ph ph-wifi-high"></i> -</span>
+                            <span class="text-muted text-sm" id="detail_alamat_ip"
+                                style="background: rgba(255,255,255,0.05); padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); display: inline-flex; align-items: center; gap: 6px;"><i
+                                    class="ph ph-wifi-high"></i> -</span>
                         </div>
                     </div>
-                    
-                    <div class="table-responsive" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
+
+                    <div class="table-responsive"
+                        style="border: 1px solid rgba(255,255,255,0.05); border-radius: 8px;">
                         <table class="table dense-table" style="margin: 0; background: transparent;">
                             <tbody>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="width: 50%; padding: 12px;">Status Sistem</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_status">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_status">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Versi Proxmox</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_versi_proxmox">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_versi_proxmox">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Total CPU Cores</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_kapasitas_cpu">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_kapasitas_cpu">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Total RAM</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_kapasitas_ram">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_kapasitas_ram">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Storage Fisik</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_storage_fisik">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_storage_fisik">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                     <td class="text-muted" style="padding: 12px;">Tahun Pembelian</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_tahun_pembelian">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_tahun_pembelian">-</strong></td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted" style="padding: 12px;">Lokasi Rak</td>
-                                    <td style="padding: 12px; text-align: right;"><strong id="detail_lokasi_rak">-</strong></td>
+                                    <td style="padding: 12px; text-align: right;"><strong
+                                            id="detail_lokasi_rak">-</strong></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -341,7 +400,8 @@
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header flex-between mb-3 border-bottom pb-2">
                 <h3 class="modal-title" id="modalTitle">Catat Data Server Node Baru</h3>
-                <button type="button" class="icon-btn close-modal" onclick="closeModal()"><i class="ph ph-x"></i></button>
+                <button type="button" class="icon-btn close-modal" onclick="closeModal()"><i
+                        class="ph ph-x"></i></button>
             </div>
             <form id="nodeForm" action="{{ route('nodes.store') }}" method="POST">
                 @csrf
@@ -349,41 +409,49 @@
                 <div class="modal-body">
                     <div class="form-group mb-2">
                         <label class="text-sm font-medium mb-1 d-block">Nama Server (Hostname)</label>
-                        <input type="text" name="nama_server" id="nama_server" class="input-form w-100" placeholder="Contoh: pve-04" required>
+                        <input type="text" name="nama_server" id="nama_server" class="input-form w-100"
+                            placeholder="Contoh: pve-04" required>
                     </div>
                     <div class="form-row flex-between gap-2 mb-2">
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Alamat IP Manajeman</label>
-                            <input type="text" name="alamat_ip" id="alamat_ip" class="input-form w-100" placeholder="192.168.1.13">
+                            <input type="text" name="alamat_ip" id="alamat_ip" class="input-form w-100"
+                                placeholder="192.168.1.13">
                         </div>
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Versi Proxmox</label>
-                            <input type="text" name="versi_proxmox" id="versi_proxmox" class="input-form w-100" placeholder="8.1.3">
+                            <input type="text" name="versi_proxmox" id="versi_proxmox" class="input-form w-100"
+                                placeholder="8.1.3">
                         </div>
                     </div>
                     <div class="form-row flex-between gap-2 mb-2">
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Total CPU Cores</label>
-                            <input type="number" name="kapasitas_cpu" id="kapasitas_cpu" class="input-form w-100" value="32">
+                            <input type="number" name="kapasitas_cpu" id="kapasitas_cpu" class="input-form w-100"
+                                value="32">
                         </div>
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Total RAM (GB)</label>
-                            <input type="number" name="kapasitas_ram" id="kapasitas_ram" class="input-form w-100" value="128">
+                            <input type="number" name="kapasitas_ram" id="kapasitas_ram" class="input-form w-100"
+                                value="128">
                         </div>
                     </div>
                     <div class="form-row flex-between gap-2 mb-2">
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Storage Fisik (GB)</label>
-                            <input type="number" name="storage_fisik" id="storage_fisik" class="input-form w-100" placeholder="1000">
+                            <input type="number" name="storage_fisik" id="storage_fisik" class="input-form w-100"
+                                placeholder="1000">
                         </div>
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Tahun Pembelian</label>
-                            <input type="number" name="tahun_pembelian" id="tahun_pembelian" class="input-form w-100" placeholder="2022">
+                            <input type="number" name="tahun_pembelian" id="tahun_pembelian"
+                                class="input-form w-100" placeholder="2022">
                         </div>
                     </div>
                     <div class="form-group mb-2">
                         <label class="text-sm font-medium mb-1 d-block">Lokasi Rak Fisik</label>
-                        <input type="text" name="lokasi_rak" id="lokasi_rak" class="input-form w-100" placeholder="Contoh: Rak C1, Data Center lt.2">
+                        <input type="text" name="lokasi_rak" id="lokasi_rak" class="input-form w-100"
+                            placeholder="Contoh: Rak C1, Data Center lt.2">
                     </div>
                     <div class="form-group mb-3">
                         <label class="text-sm font-medium mb-1 d-block">Status</label>
@@ -423,7 +491,7 @@
             modalTitle.innerText = 'Edit Data Server Node';
             nodeForm.action = `/nodes/${node.id}`;
             formMethod.value = 'PUT';
-            
+
             document.getElementById('nama_server').value = node.nama_server || '';
             document.getElementById('alamat_ip').value = node.alamat_ip || '';
             document.getElementById('versi_proxmox').value = node.versi_proxmox || '';
@@ -481,10 +549,11 @@
         }
 
         const detailModal = document.getElementById('detailModal');
+
         function openDetailModal(node) {
             document.getElementById('detail_nama_server').innerText = node.nama_server || '-';
             document.getElementById('detail_alamat_ip').innerText = node.alamat_ip || '-';
-            
+
             let statusEl = document.getElementById('detail_status');
             statusEl.innerText = node.status || '-';
             statusEl.className = node.status === 'Online' ? 'text-success' : 'text-danger';

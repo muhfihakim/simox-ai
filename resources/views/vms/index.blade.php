@@ -96,9 +96,17 @@
                     <button class="view-toggle-btn active" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i class="ph ph-list"></i></button>
                 </div>
             </div>
-            <div class="search-box-sm">
-                <i class="ph ph-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Cari Hostname / IP / Fungsi..." onkeyup="filterItems()">
+            <div class="flex-align-center gap-2">
+                <select id="nodeFilter" class="input-form" style="padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; height: auto;" onchange="filterItems()">
+                    <option value="">-- Filter Node --</option>
+                    @foreach($nodes as $n)
+                        <option value="{{ strtolower($n->nama_server) }}">{{ $n->nama_server }}</option>
+                    @endforeach
+                </select>
+                <div class="search-box-sm">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Cari Hostname / IP / Fungsi..." onkeyup="filterItems()">
+                </div>
             </div>
         </div>
         <style>
@@ -110,7 +118,7 @@
             style="display: none; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
 
             @foreach($vms as $vm)
-            <div class="card searchable-item" data-search="{{ strtolower($vm->hostname . ' ' . $vm->ip_public_private . ' ' . $vm->fungsi_layanan) }}">
+            <div class="card searchable-item" data-node="{{ strtolower($vm->serverFisik->nama_server ?? '') }}" data-search="{{ strtolower($vm->hostname . ' ' . $vm->ip_public_private . ' ' . $vm->fungsi_layanan) }}">
                 <div class="card-header flex-between">
                     <div class="flex-align-center gap-2">
                         @if(stripos($vm->os_distro, 'windows') !== false)
@@ -198,7 +206,7 @@
                         </thead>
                         <tbody>
                             @foreach($vms as $vm)
-                            <tr class="searchable-table-item" data-search="{{ strtolower($vm->hostname . ' ' . $vm->ip_public_private . ' ' . $vm->fungsi_layanan) }}">
+                            <tr class="searchable-table-item" data-node="{{ strtolower($vm->serverFisik->nama_server ?? '') }}" data-search="{{ strtolower($vm->hostname . ' ' . $vm->ip_public_private . ' ' . $vm->fungsi_layanan) }}">
                                 <td>
                                     <div class="flex-align-center gap-2">
                                         @if(stripos($vm->os_distro, 'windows') !== false)
@@ -451,12 +459,18 @@
 
         function filterItems() {
             let input = document.getElementById('searchInput').value.toLowerCase();
+            let nodeFilter = document.getElementById('nodeFilter').value.toLowerCase();
             let items = document.getElementsByClassName('searchable-item');
             let tableItems = document.getElementsByClassName('searchable-table-item');
 
             for (let i = 0; i < items.length; i++) {
                 let text = items[i].getAttribute('data-search');
-                if (text.includes(input)) {
+                let node = items[i].getAttribute('data-node') || '';
+                
+                let matchesSearch = text.includes(input);
+                let matchesNode = nodeFilter === '' || node === nodeFilter;
+
+                if (matchesSearch && matchesNode) {
                     items[i].style.display = "";
                 } else {
                     items[i].style.display = "none";
@@ -465,7 +479,12 @@
 
             for (let i = 0; i < tableItems.length; i++) {
                 let text = tableItems[i].getAttribute('data-search');
-                if (text.includes(input)) {
+                let node = tableItems[i].getAttribute('data-node') || '';
+                
+                let matchesSearch = text.includes(input);
+                let matchesNode = nodeFilter === '' || node === nodeFilter;
+
+                if (matchesSearch && matchesNode) {
                     tableItems[i].style.display = "";
                 } else {
                     tableItems[i].style.display = "none";
