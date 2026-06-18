@@ -91,7 +91,7 @@
         <div class="flex-between mb-2 mt-4 flex-wrap gap-2">
             <div class="flex-align-center gap-2">
                 <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar VM</h3>
-                <div class="flex-align-center gap-1">
+                <div class="flex-align-center" style="gap: 8px;">
                     <button class="view-toggle-btn active" id="btnGrid" onclick="toggleView('grid')" title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
                     <button class="view-toggle-btn" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i class="ph ph-list"></i></button>
                 </div>
@@ -289,37 +289,37 @@
                     </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">Status VM</span>
-                            <strong id="detail_status">-</strong>
+                            <strong id="detail_status" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">OS Distro</span>
-                            <strong id="detail_os_distro">-</strong>
+                            <strong id="detail_os_distro" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">Node Induk</span>
-                            <strong id="detail_node">-</strong>
+                            <strong id="detail_node" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">Fungsi Layanan</span>
-                            <strong id="detail_fungsi">-</strong>
+                            <strong id="detail_fungsi" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">Alokasi CPU</span>
-                            <strong id="detail_cpu">-</strong>
+                            <strong id="detail_cpu" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">Alokasi RAM</span>
-                            <strong id="detail_ram">-</strong>
+                            <strong id="detail_ram" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">Alokasi Disk</span>
-                            <strong id="detail_disk">-</strong>
+                            <strong id="detail_disk" style="font-size: 0.95rem;">-</strong>
                         </div>
-                        <div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <span class="text-xs text-muted d-block mb-1">VLAN</span>
-                            <strong id="detail_vlan">-</strong>
+                            <strong id="detail_vlan" style="font-size: 0.95rem;">-</strong>
                         </div>
                     </div>
                 </div>
