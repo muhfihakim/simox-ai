@@ -36,6 +36,8 @@ class ServerFisikController extends Controller
             'versi_proxmox' => 'nullable|string|max:255',
             'kapasitas_cpu' => 'nullable|integer',
             'kapasitas_ram' => 'nullable|integer',
+            'storage_fisik' => 'nullable|integer',
+            'tahun_pembelian' => 'nullable|integer',
             'lokasi_rak' => 'nullable|string|max:255',
         ]);
 
@@ -46,17 +48,17 @@ class ServerFisikController extends Controller
         return redirect()->route('nodes.index')->with('success', 'Data Node berhasil ditambahkan!');
     }
 
-    public function show(ServerFisik $serverFisik)
+    public function show(ServerFisik $node)
     {
         //
     }
 
-    public function edit(ServerFisik $serverFisik)
+    public function edit(ServerFisik $node)
     {
         //
     }
 
-    public function update(Request $request, ServerFisik $serverFisik)
+    public function update(Request $request, ServerFisik $node)
     {
         $validated = $request->validate([
             'nama_server' => 'required|string|max:255',
@@ -64,18 +66,20 @@ class ServerFisikController extends Controller
             'versi_proxmox' => 'nullable|string|max:255',
             'kapasitas_cpu' => 'nullable|integer',
             'kapasitas_ram' => 'nullable|integer',
+            'storage_fisik' => 'nullable|integer',
+            'tahun_pembelian' => 'nullable|integer',
             'lokasi_rak' => 'nullable|string|max:255',
             'status' => 'required|string',
         ]);
 
-        $serverFisik->update($validated);
+        $node->update($validated);
 
         return redirect()->route('nodes.index')->with('success', 'Data Node berhasil diperbarui!');
     }
 
-    public function destroy(ServerFisik $serverFisik)
+    public function destroy(ServerFisik $node)
     {
-        $serverFisik->delete();
+        $node->delete();
         return redirect()->route('nodes.index')->with('success', 'Data Node berhasil dihapus!');
     }
 }

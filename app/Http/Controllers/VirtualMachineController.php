@@ -43,17 +43,17 @@ class VirtualMachineController extends Controller
         return redirect()->route('vms.index')->with('success', 'Data Virtual Machine berhasil ditambahkan!');
     }
 
-    public function show(VirtualMachine $virtualMachine)
+    public function show(VirtualMachine $vm)
     {
         //
     }
 
-    public function edit(VirtualMachine $virtualMachine)
+    public function edit(VirtualMachine $vm)
     {
         //
     }
 
-    public function update(Request $request, VirtualMachine $virtualMachine)
+    public function update(Request $request, VirtualMachine $vm)
     {
         $validated = $request->validate([
             'server_fisik_id' => 'required|exists:server_fisiks,id',
@@ -68,14 +68,14 @@ class VirtualMachineController extends Controller
             'vlan' => 'nullable|string|max:255',
         ]);
 
-        $virtualMachine->update($validated);
+        $vm->update($validated);
 
         return redirect()->route('vms.index')->with('success', 'Data Virtual Machine berhasil diperbarui!');
     }
 
-    public function destroy(VirtualMachine $virtualMachine)
+    public function destroy(VirtualMachine $vm)
     {
-        $virtualMachine->delete();
+        $vm->delete();
         return redirect()->route('vms.index')->with('success', 'Data Virtual Machine berhasil dihapus!');
     }
 }
