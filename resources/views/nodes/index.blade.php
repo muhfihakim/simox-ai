@@ -9,24 +9,26 @@
             <div class="header-actions">
                 <button class="btn btn-outline" onclick="window.location.reload()"><i
                         class="ph ph-arrows-clockwise"></i> Sinkronisasi</button>
-                <button class="btn btn-primary" id="openModalBtn"><i class="ph ph-plus"></i> Catat Node Baru</button>
+                <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat Node Baru</button>
             </div>
         </div>
 
         @if(session('success'))
-            <div style="background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                {{ session('success') }}
-            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    showToast("{{ session('success') }}", "success");
+                });
+            </script>
         @endif
 
         @if($errors->any())
-            <div style="background: #ef4444; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                <ul>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
                     @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
+                        showToast("{{ $error }}", "error");
                     @endforeach
-                </ul>
-            </div>
+                });
+            </script>
         @endif
 
         <!-- Node Stats Cards -->
@@ -35,13 +37,13 @@
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Total Node</span>
-                        <h3 class="stat-value">{{ $nodes->count() }}</h3>
+                        <h3 class="stat-value">{{ $allNodes->count() }}</h3>
                     </div>
                     <div class="stat-icon bg-blue"><i class="ph ph-hard-drives"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success">{{ $nodes->where('status', 'Online')->count() }} Online</span> &bull; 
-                    <span class="text-danger">{{ $nodes->where('status', '!=', 'Online')->count() }} Offline</span>
+                    <span class="text-success">{{ $allNodes->where('status', 'Online')->count() }} Online</span> &bull; 
+                    <span class="text-danger">{{ $allNodes->where('status', '!=', 'Online')->count() }} Offline</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -60,7 +62,7 @@
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Total CPU</span>
-                        <h3 class="stat-value">{{ $nodes->sum('kapasitas_cpu') }} Cores</h3>
+                        <h3 class="stat-value">{{ $allNodes->sum('kapasitas_cpu') }} Cores</h3>
                     </div>
                     <div class="stat-icon bg-purple"><i class="ph ph-cpu"></i></div>
                 </div>
@@ -75,7 +77,7 @@
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Total RAM</span>
-                        <h3 class="stat-value">{{ $nodes->sum('kapasitas_ram') }} GB</h3>
+                        <h3 class="stat-value">{{ $allNodes->sum('kapasitas_ram') }} GB</h3>
                     </div>
                     <div class="stat-icon bg-orange"><i class="ph ph-memory"></i></div>
                 </div>
@@ -89,11 +91,18 @@
         </div>
 
         <!-- Node Cards (Grid) -->
-        <div class="content-grid"
+        <div class="flex-between mb-2 mt-4 flex-wrap gap-2">
+            <h3 class="card-title" style="font-size: 1rem;">Daftar Node</h3>
+            <div class="search-box-sm">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Cari Nama / IP..." onkeyup="filterItems()">
+            </div>
+        </div>
+        <div class="content-grid" id="cardsContainer"
             style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 1.5rem;">
 
             @foreach($nodes as $node)
-            <div class="card">
+            <div class="card searchable-item" data-search="{{ strtolower($node->nama_server . ' ' . $node->alamat_ip) }}">
                 <div class="card-header flex-between">
                     <div class="flex-align-center gap-2">
                         <i class="ph-fill ph-hard-drive {{ $node->status == 'Online' ? 'text-primary' : 'text-muted' }}" style="font-size: 1.4rem;"></i>
@@ -143,7 +152,7 @@
                     </div>
                 </div>
                 <div class="card-footer flex-between gap-2">
-                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;"><i class="ph ph-info"></i> Detail Spesifikasi</button>
+                    <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;"><i class="ph ph-info"></i> Detail</button>
                     <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
                     <form action="{{ route('nodes.destroy', $node->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus node ini?');">
                         @csrf
@@ -156,112 +165,93 @@
 
         </div>
 
-        <!-- Cluster Data Table -->
-        <div class="card">
-            <div class="card-header flex-between flex-wrap gap-2">
-                <h3 class="card-title">Buku Detail Node (Corosync)</h3>
-                <div class="table-controls">
-                    <div class="search-box-sm">
-                        <i class="ph ph-magnifying-glass"></i>
-                        <input type="text" placeholder="Cari Nama Node / IP...">
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table dense-table">
-                        <thead>
-                            <tr>
-                                <th>Nama Server</th>
-                                <th>Versi OS</th>
-                                <th>Alamat IP</th>
-                                <th>Lokasi Rak</th>
-                                <th>Tahun Pembelian</th>
-                                <th class="text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($nodes as $node)
-                            <tr class="{{ $node->status != 'Online' ? 'row-disabled' : '' }}">
-                                <td><strong>{{ $node->nama_server }}</strong> @if($node->is_master)<span class="text-muted text-xs">(Master)</span>@endif</td>
-                                <td>Proxmox {{ $node->versi_proxmox ?? '-' }}</td>
-                                <td>{{ $node->alamat_ip ?? '-' }}</td>
-                                <td>{{ $node->lokasi_rak ?? '-' }}</td>
-                                <td>{{ $node->tahun_pembelian ?? '-' }}</td>
-                                <td class="text-right">
-                                    <button class="icon-btn-sm text-primary" title="Detail Data"><i class="ph ph-info"></i></button>
-                                    <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($node) }})"><i class="ph ph-pencil-simple"></i></button>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card-footer">
-                <div class="pagination-info">Menampilkan total {{ $nodes->count() }} data server</div>
+        @if($nodes->hasPages())
+        <div class="card-footer flex-between" style="background: transparent; border: none; padding: 0;">
+            <div class="pagination-info text-muted">Menampilkan {{ $nodes->firstItem() }}-{{ $nodes->lastItem() }} dari {{ $nodes->total() }} data</div>
+            <div class="pagination flex-align-center gap-1">
+                @if ($nodes->onFirstPage())
+                    <button class="page-btn disabled" disabled><i class="ph ph-caret-left"></i></button>
+                @else
+                    <a href="{{ $nodes->previousPageUrl() }}" class="page-btn"><i class="ph ph-caret-left"></i></a>
+                @endif
+                
+                @foreach ($nodes->getUrlRange(1, $nodes->lastPage()) as $page => $url)
+                    @if ($page == $nodes->currentPage())
+                        <button class="page-btn active">{{ $page }}</button>
+                    @else
+                        <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                @if ($nodes->hasMorePages())
+                    <a href="{{ $nodes->nextPageUrl() }}" class="page-btn"><i class="ph ph-caret-right"></i></a>
+                @else
+                    <button class="page-btn disabled" disabled><i class="ph ph-caret-right"></i></button>
+                @endif
             </div>
         </div>
+        @endif
+
     </div>
 
     <!-- Modal Template for Add Node -->
-    <div class="modal-overlay" id="createModal" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
+    <div class="modal-overlay" id="createModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal" style="background: var(--bg-card); width: 100%; max-width: 600px; border-radius: 12px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <div class="modal-header flex-between mb-3 border-bottom pb-2">
                 <h3 class="modal-title" id="modalTitle">Catat Data Server Node Baru</h3>
-                <button class="icon-btn close-modal" onclick="closeModal()"><i class="ph ph-x"></i></button>
+                <button type="button" class="icon-btn close-modal" onclick="closeModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-color);"><i class="ph ph-x"></i></button>
             </div>
             <form id="nodeForm" action="{{ route('nodes.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Nama Server (Hostname)</label>
-                        <input type="text" name="nama_server" id="nama_server" class="input-form" placeholder="Contoh: pve-04" required>
+                    <div class="form-group mb-2">
+                        <label class="text-sm font-medium mb-1 d-block">Nama Server (Hostname)</label>
+                        <input type="text" name="nama_server" id="nama_server" class="input-form w-100" placeholder="Contoh: pve-04" required>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Alamat IP Manajeman</label>
-                            <input type="text" name="alamat_ip" id="alamat_ip" class="input-form" placeholder="192.168.1.13">
+                    <div class="form-row flex-between gap-2 mb-2">
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Alamat IP Manajeman</label>
+                            <input type="text" name="alamat_ip" id="alamat_ip" class="input-form w-100" placeholder="192.168.1.13">
                         </div>
-                        <div class="form-group">
-                            <label>Versi Proxmox</label>
-                            <input type="text" name="versi_proxmox" id="versi_proxmox" class="input-form" placeholder="8.1.3">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Total CPU Cores</label>
-                            <input type="number" name="kapasitas_cpu" id="kapasitas_cpu" class="input-form" value="32">
-                        </div>
-                        <div class="form-group">
-                            <label>Total RAM (GB)</label>
-                            <input type="number" name="kapasitas_ram" id="kapasitas_ram" class="input-form" value="128">
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Versi Proxmox</label>
+                            <input type="text" name="versi_proxmox" id="versi_proxmox" class="input-form w-100" placeholder="8.1.3">
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Storage Fisik</label>
-                            <input type="text" name="storage_fisik" id="storage_fisik" class="input-form" placeholder="1.5 TB">
+                    <div class="form-row flex-between gap-2 mb-2">
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Total CPU Cores</label>
+                            <input type="number" name="kapasitas_cpu" id="kapasitas_cpu" class="input-form w-100" value="32">
                         </div>
-                        <div class="form-group">
-                            <label>Tahun Pembelian</label>
-                            <input type="number" name="tahun_pembelian" id="tahun_pembelian" class="input-form" placeholder="2022">
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Total RAM (GB)</label>
+                            <input type="number" name="kapasitas_ram" id="kapasitas_ram" class="input-form w-100" value="128">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Lokasi Rak Fisik</label>
-                        <input type="text" name="lokasi_rak" id="lokasi_rak" class="input-form" placeholder="Contoh: Rak C1, Data Center lt.2">
+                    <div class="form-row flex-between gap-2 mb-2">
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Storage Fisik</label>
+                            <input type="text" name="storage_fisik" id="storage_fisik" class="input-form w-100" placeholder="1.5 TB">
+                        </div>
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Tahun Pembelian</label>
+                            <input type="number" name="tahun_pembelian" id="tahun_pembelian" class="input-form w-100" placeholder="2022">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select name="status" id="status" class="input-form">
+                    <div class="form-group mb-2">
+                        <label class="text-sm font-medium mb-1 d-block">Lokasi Rak Fisik</label>
+                        <input type="text" name="lokasi_rak" id="lokasi_rak" class="input-form w-100" placeholder="Contoh: Rak C1, Data Center lt.2">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="text-sm font-medium mb-1 d-block">Status</label>
+                        <select name="status" id="status" class="input-form w-100">
                             <option value="Online">Online</option>
                             <option value="Offline">Offline</option>
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer flex-end gap-2 mt-4 pt-2 border-top">
                     <button type="button" class="btn btn-outline" onclick="closeModal()">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan Data</button>
                 </div>
@@ -275,7 +265,7 @@
         const modalTitle = document.getElementById('modalTitle');
         const formMethod = document.getElementById('formMethod');
 
-        document.getElementById('openModalBtn').addEventListener('click', function() {
+        document.getElementById('customOpenModalBtn').addEventListener('click', function() {
             modalTitle.innerText = 'Catat Data Server Node Baru';
             nodeForm.action = '{{ route('nodes.store') }}';
             formMethod.value = 'POST';
@@ -292,17 +282,31 @@
             nodeForm.action = `/nodes/${node.id}`;
             formMethod.value = 'PUT';
             
-            document.getElementById('nama_server').value = node.nama_server;
-            document.getElementById('alamat_ip').value = node.alamat_ip;
-            document.getElementById('versi_proxmox').value = node.versi_proxmox;
-            document.getElementById('kapasitas_cpu').value = node.kapasitas_cpu;
-            document.getElementById('kapasitas_ram').value = node.kapasitas_ram;
-            document.getElementById('storage_fisik').value = node.storage_fisik;
-            document.getElementById('tahun_pembelian').value = node.tahun_pembelian;
-            document.getElementById('lokasi_rak').value = node.lokasi_rak;
-            document.getElementById('status').value = node.status;
+            document.getElementById('nama_server').value = node.nama_server || '';
+            document.getElementById('alamat_ip').value = node.alamat_ip || '';
+            document.getElementById('versi_proxmox').value = node.versi_proxmox || '';
+            document.getElementById('kapasitas_cpu').value = node.kapasitas_cpu || '';
+            document.getElementById('kapasitas_ram').value = node.kapasitas_ram || '';
+            document.getElementById('storage_fisik').value = node.storage_fisik || '';
+            document.getElementById('tahun_pembelian').value = node.tahun_pembelian || '';
+            document.getElementById('lokasi_rak').value = node.lokasi_rak || '';
+            document.getElementById('status').value = node.status || 'Online';
 
             modal.style.display = 'flex';
+        }
+
+        function filterItems() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let items = document.getElementsByClassName('searchable-item');
+
+            for (let i = 0; i < items.length; i++) {
+                let text = items[i].getAttribute('data-search');
+                if (text.includes(input)) {
+                    items[i].style.display = "";
+                } else {
+                    items[i].style.display = "none";
+                }
+            }
         }
     </script>
 </x-layouts.app>

@@ -12,8 +12,9 @@ class ServerFisikController extends Controller
      */
     public function index()
     {
-        $nodes = ServerFisik::orderBy('nama_server', 'asc')->get();
-        return view('nodes.index', compact('nodes'));
+        $allNodes = ServerFisik::all();
+        $nodes = ServerFisik::orderBy('nama_server', 'asc')->paginate(6);
+        return view('nodes.index', compact('nodes', 'allNodes'));
     }
 
     /**

@@ -12,9 +12,10 @@ class VirtualMachineController extends Controller
      */
     public function index()
     {
-        $vms = VirtualMachine::with('serverFisik')->orderBy('hostname', 'asc')->get();
+        $allVms = VirtualMachine::all();
+        $vms = VirtualMachine::with('serverFisik')->orderBy('hostname', 'asc')->paginate(6);
         $nodes = \App\Models\ServerFisik::orderBy('nama_server', 'asc')->get();
-        return view('vms.index', compact('vms', 'nodes'));
+        return view('vms.index', compact('vms', 'allVms', 'nodes'));
     }
 
     public function create()
