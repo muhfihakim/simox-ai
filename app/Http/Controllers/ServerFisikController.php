@@ -13,7 +13,7 @@ class ServerFisikController extends Controller
     public function index()
     {
         $allNodes = ServerFisik::all();
-        $nodes = ServerFisik::orderBy('nama_server', 'asc')->paginate(6);
+        $nodes = ServerFisik::with('virtualMachines')->orderBy('nama_server', 'asc')->paginate(6);
         return view('nodes.index', compact('nodes', 'allNodes'));
     }
 

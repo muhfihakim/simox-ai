@@ -122,32 +122,43 @@
                     @endif
                 </div>
                 <div class="card-body">
+                    @php
+                        $usedCpu = $node->virtualMachines->sum('allocated_cpu');
+                        $usedRam = $node->virtualMachines->sum('allocated_ram_gb');
+                        $usedDisk = $node->virtualMachines->sum('allocated_disk_gb');
+                        
+                        $cpuPct = $node->kapasitas_cpu > 0 ? min(100, ($usedCpu / $node->kapasitas_cpu) * 100) : 0;
+                        $ramPct = $node->kapasitas_ram > 0 ? min(100, ($usedRam / $node->kapasitas_ram) * 100) : 0;
+                        $diskCapacity = (int) $node->storage_fisik;
+                        $diskPct = $diskCapacity > 0 ? min(100, ($usedDisk / $diskCapacity) * 100) : 0;
+                    @endphp
+
                     <div class="text-xs text-muted mb-4">Uptime Tercatat: {{ $node->uptime ?? '-' }}</div>
 
                     <div class="resource-bar mb-2">
                         <div class="flex-between text-xs mb-1">
-                            <span>Kapasitas CPU ({{ $node->kapasitas_cpu ?? 0 }} Cores)</span>
+                            <span>Kapasitas CPU ({{ $usedCpu }} / {{ $node->kapasitas_cpu ?? 0 }} Cores)</span>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-blue' : '' }}" style="width: 100%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
+                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-blue' : '' }}" style="width: {{ $cpuPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
                         </div>
                     </div>
 
                     <div class="resource-bar mb-2">
                         <div class="flex-between text-xs mb-1">
-                            <span>Kapasitas RAM ({{ $node->kapasitas_ram ?? 0 }} GB)</span>
+                            <span>Kapasitas RAM ({{ $usedRam }} / {{ $node->kapasitas_ram ?? 0 }} GB)</span>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-purple' : '' }}" style="width: 100%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
+                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-purple' : '' }}" style="width: {{ $ramPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
                         </div>
                     </div>
 
                     <div class="resource-bar">
                         <div class="flex-between text-xs mb-1">
-                            <span>Storage Fisik ({{ $node->storage_fisik ?? 0 }})</span>
+                            <span>Storage Fisik ({{ $usedDisk }} / {{ $node->storage_fisik ?? 0 }} GB)</span>
                         </div>
                         <div class="progress-bar-container">
-                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-green' : '' }}" style="width: 100%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
+                            <div class="progress-bar {{ $node->status == 'Online' ? 'bg-green' : '' }}" style="width: {{ $diskPct }}%; {{ $node->status != 'Online' ? 'background: #cbd5e1;' : '' }}"></div>
                         </div>
                     </div>
                 </div>
@@ -194,7 +205,7 @@
                                 <td>{{ $node->alamat_ip }}</td>
                                 <td>{{ $node->kapasitas_cpu }} Cores</td>
                                 <td>{{ $node->kapasitas_ram }} GB</td>
-                                <td>{{ $node->storage_fisik }}</td>
+                                <td>{{ $node->storage_fisik }} GB</td>
                                 <td>{{ $node->lokasi_rak }}</td>
                                 <td>
                                     @if($node->status == 'Online')
@@ -290,8 +301,8 @@
                     </div>
                     <div class="form-row flex-between gap-2 mb-2">
                         <div class="form-group flex-grow-1">
-                            <label class="text-sm font-medium mb-1 d-block">Storage Fisik</label>
-                            <input type="text" name="storage_fisik" id="storage_fisik" class="input-form w-100" placeholder="1.5 TB">
+                            <label class="text-sm font-medium mb-1 d-block">Storage Fisik (GB)</label>
+                            <input type="number" name="storage_fisik" id="storage_fisik" class="input-form w-100" placeholder="1000">
                         </div>
                         <div class="form-group flex-grow-1">
                             <label class="text-sm font-medium mb-1 d-block">Tahun Pembelian</label>
