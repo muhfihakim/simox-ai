@@ -28,7 +28,7 @@
                 PVE</span></a>
 
         <span class="nav-label mt-4">SISTEM</span>
-        <a href="#" class="nav-item"><i class="ph ph-users"></i> <span>Pengguna Admin</span></a>
+        <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="ph ph-users"></i> <span>Pengguna Admin</span></a>
         <a href="#" class="nav-item"><i class="ph ph-gear"></i> <span>Pengaturan</span></a>
     </nav>
 

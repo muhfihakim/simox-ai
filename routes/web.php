@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AiAgentController;
 use App\Http\Controllers\ServerFisikController;
 use App\Http\Controllers\VirtualMachineController;
+use App\Http\Controllers\UserController;
 
 Route::get('/login', [AuthController::class, 'login'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login.post');
@@ -21,6 +22,7 @@ Route::middleware(['auth'])->group(function () {
     
     Route::resource('nodes', ServerFisikController::class)->names('nodes');
     Route::resource('vms', VirtualMachineController::class)->names('vms');
+    Route::resource('users', UserController::class)->names('users');
     
     // Other routes
     Route::get('/lxc', function () {
