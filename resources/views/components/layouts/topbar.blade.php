@@ -42,7 +42,7 @@
                      <strong>{{ auth()->user()->email ?? 'admin@diskominfo.go.id' }}</strong>
                  </div>
                  <hr style="margin: 0.5rem 0; border: 0; border-top: 1px solid var(--border);">
-                 <a href="#" class="dropdown-item"><i class="ph ph-user"></i> Profil Saya</a>
+                 <a href="{{ route('users.index') }}" class="dropdown-item"><i class="ph ph-user"></i> Profil Saya</a>
                  <a href="#" class="dropdown-item"><i class="ph ph-gear"></i> Pengaturan</a>
                  <hr style="margin: 0.5rem 0; border: 0; border-top: 1px solid var(--border);">
                  <form action="{{ route('logout') }}" method="POST" style="margin: 0;">

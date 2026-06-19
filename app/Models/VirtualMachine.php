@@ -11,6 +11,7 @@ class VirtualMachine extends Model
 
     protected $fillable = [
         'server_fisik_id',
+        'tipe',
         'hostname',
         'ip_public_private',
         'status',

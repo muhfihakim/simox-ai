@@ -21,17 +21,12 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard.index');
     
     Route::resource('nodes', ServerFisikController::class)->names('nodes');
-    Route::resource('vms', VirtualMachineController::class)->names('vms');
+    Route::resource('vps', VirtualMachineController::class)->names('vps');
     Route::resource('users', UserController::class)->names('users');
     
     // Other routes
-    Route::get('/lxc', function () {
-        return view('lxc.index');
-    })->name('lxc.index');
-    
-    Route::get('/reports', function () {
-        return view('reports.index');
-    })->name('reports.index');
+    Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/export', [\App\Http\Controllers\ReportController::class, 'exportPdf'])->name('reports.export');
 });
 
 Route::post('/api/chat', [AiAgentController::class, 'chat'])->name('api.chat');

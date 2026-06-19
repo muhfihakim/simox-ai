@@ -9,7 +9,7 @@
             <div class="header-actions">
                 <button class="btn btn-outline" onclick="window.location.reload()"><i
                         class="ph ph-arrows-clockwise"></i> Sinkronisasi</button>
-                <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat VM Baru</button>
+                <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat VPS Baru</button>
             </div>
         </div>
 
@@ -31,12 +31,12 @@
             </script>
         @endif
 
-        <!-- VM Stats Cards -->
+        <!-- VPS Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
-                        <span class="stat-title">Total VM Tercatat</span>
+                        <span class="stat-title">Total VPS Tercatat</span>
                         <h3 class="stat-value">{{ $allVms->count() }}</h3>
                     </div>
                     <div class="stat-icon bg-purple"><i class="ph ph-desktop"></i></div>
@@ -55,7 +55,7 @@
                     <div class="stat-icon bg-blue"><i class="ph ph-cpu"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-muted">Total dari seluruh VM</span>
+                    <span class="text-muted">Total dari seluruh VPS</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -87,10 +87,10 @@
             </div>
         </div>
 
-        <!-- Top Resource VMs (Grid) -->
+        <!-- Top Resource VPSs (Grid) -->
         <div class="flex-between mb-2 mt-4 flex-wrap gap-2">
             <div class="flex-align-center gap-2">
-                <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar VM</h3>
+                <h3 class="card-title" style="font-size: 1rem; margin-right: 10px;">Daftar VPS</h3>
                 <div class="flex-align-center" style="gap: 8px;">
                     <button class="view-toggle-btn" id="btnGrid" onclick="toggleView('grid')" title="Tampilan Grid"><i class="ph ph-squares-four"></i></button>
                     <button class="view-toggle-btn active" id="btnList" onclick="toggleView('list')" title="Tampilan List"><i class="ph ph-list"></i></button>
@@ -130,7 +130,7 @@
                             <i class="ph-fill ph-linux-logo text-primary" style="font-size: 1.4rem;"></i>
                         @endif
                         <div>
-                            <h3 class="card-title">{{ $vm->hostname }} <span class="text-muted text-xs">#{{ $vm->id }}</span></h3>
+                            <h3 class="card-title">{{ $vm->hostname }} <span class="badge bg-purple-light text-purple text-xs ml-2">{{ $vm->tipe }}</span> <span class="text-muted text-xs">#{{ $vm->id }}</span></h3>
                         </div>
                     </div>
                     @if($vm->status == 'Running')
@@ -175,7 +175,7 @@
                             class="ph ph-info"></i> Detail Data</button>
                     <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($vm) }})"><i
                             class="ph ph-pencil-simple"></i></button>
-                    <form action="{{ route('vms.destroy', $vm->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus VM ini?');">
+                    <form action="{{ route('vps.destroy', $vm->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus VPS ini?');">
                         @csrf
                         @method('DELETE')
                         <button class="icon-btn-sm text-danger" title="Hapus Data"><i class="ph ph-trash"></i></button>
@@ -186,16 +186,17 @@
 
         </div>
 
-        <!-- VM Data Table -->
+        <!-- VPS Data Table -->
         <div class="card mb-4" id="tableContainer" style="display: block;">
             <div class="card-header flex-between flex-wrap gap-2">
-                <h3 class="card-title">Tabel Detail Virtual Machine</h3>
+                <h3 class="card-title">Tabel Detail VPS</h3>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table dense-table">
                         <thead>
                             <tr>
+                                <th>Tipe</th>
                                 <th>Hostname</th>
                                 <th>OS Distro</th>
                                 <th>IP Address</th>
@@ -210,6 +211,7 @@
                         <tbody>
                             @foreach($vms as $vm)
                             <tr class="searchable-table-item" data-node="{{ strtolower($vm->serverFisik->nama_server ?? '') }}" data-search="{{ strtolower($vm->hostname . ' ' . $vm->ip_public_private . ' ' . $vm->fungsi_layanan) }}">
+                                <td><strong>{{ $vm->tipe }}</strong></td>
                                 <td>
                                     <div class="flex-align-center gap-2">
                                         @if(stripos($vm->os_distro, 'windows') !== false)
@@ -235,7 +237,7 @@
                                 </td>
                                 <td class="text-right">
                                     <button class="icon-btn-sm text-warning" title="Edit Data" onclick="openEditModal({{ json_encode($vm) }})"><i class="ph ph-pencil-simple"></i></button>
-                                    <form action="{{ route('vms.destroy', $vm->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus VM ini?');">
+                                    <form action="{{ route('vps.destroy', $vm->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus VPS ini?');">
                                         @csrf
                                         @method('DELETE')
                                         <button class="icon-btn-sm text-danger" title="Hapus Data"><i class="ph ph-trash"></i></button>
@@ -282,11 +284,11 @@
         @endif
     </div>
 
-    <!-- Modal Template for Detail VM -->
+    <!-- Modal Template for Detail VPS -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header flex-between mb-3 border-bottom pb-2">
-                <h3 class="modal-title">Detail Spesifikasi VM</h3>
+                <h3 class="modal-title">Detail Spesifikasi VPS</h3>
                 <button type="button" class="icon-btn close-modal" onclick="closeDetailModal()"><i class="ph ph-x"></i></button>
             </div>
             <div class="modal-body">
@@ -305,7 +307,11 @@
                         <table class="table dense-table" style="margin: 0; background: transparent;">
                             <tbody>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                    <td class="text-muted" style="width: 50%; padding: 12px;">Status VM</td>
+                                    <td class="text-muted" style="width: 50%; padding: 12px;">Tipe</td>
+                                    <td style="padding: 12px; text-align: right;"><strong id="detail_tipe">-</strong></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td class="text-muted" style="width: 50%; padding: 12px;">Status VPS</td>
                                     <td style="padding: 12px; text-align: right;"><strong id="detail_status">-</strong></td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -347,14 +353,14 @@
         </div>
     </div>
 
-    <!-- Modal Template for Add/Edit VM -->
+    <!-- Modal Template for Add/Edit VPS -->
     <div class="modal-overlay" id="createModal">
         <div class="modal" style="max-width: 600px;">
             <div class="modal-header flex-between mb-3 border-bottom pb-2">
-                <h3 class="modal-title" id="modalTitle">Catat Data Virtual Machine</h3>
+                <h3 class="modal-title" id="modalTitle">Catat Data VPS</h3>
                 <button type="button" class="icon-btn close-modal" onclick="closeModal()"><i class="ph ph-x"></i></button>
             </div>
-            <form id="vmForm" action="{{ route('vms.store') }}" method="POST">
+            <form id="vmForm" action="{{ route('vps.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
@@ -362,14 +368,23 @@
                         <label class="text-sm font-medium mb-1 d-block">Nama Server (Hostname)</label>
                         <input type="text" name="hostname" id="hostname" class="input-form w-100" required placeholder="Contoh: VPS-APP">
                     </div>
-                    <div class="form-group mb-2">
-                        <label class="text-sm font-medium mb-1 d-block">Node Induk</label>
-                        <select name="server_fisik_id" id="server_fisik_id" class="input-form w-100" required>
-                            <option value="">-- Pilih Node --</option>
-                            @foreach($nodes as $node)
-                                <option value="{{ $node->id }}">{{ $node->nama_server }}</option>
-                            @endforeach
-                        </select>
+                    <div class="form-row flex-between gap-2 mb-2">
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Node Induk</label>
+                            <select name="server_fisik_id" id="server_fisik_id" class="input-form w-100" required>
+                                <option value="">-- Pilih Node --</option>
+                                @foreach($nodes as $node)
+                                    <option value="{{ $node->id }}">{{ $node->nama_server }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group flex-grow-1">
+                            <label class="text-sm font-medium mb-1 d-block">Tipe</label>
+                            <select name="tipe" id="tipe" class="input-form w-100" required>
+                                <option value="VM">Virtual Machine (VM)</option>
+                                <option value="LXC">Container (LXC)</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-row flex-between gap-2 mb-2">
                         <div class="form-group flex-grow-1">
@@ -430,8 +445,8 @@
         const formMethod = document.getElementById('formMethod');
 
         document.getElementById('customOpenModalBtn').addEventListener('click', function() {
-            modalTitle.innerText = 'Catat Data Virtual Machine Baru';
-            vmForm.action = '{{ route('vms.store') }}';
+            modalTitle.innerText = 'Catat Data VPS Baru';
+            vmForm.action = '{{ route('vps.store') }}';
             formMethod.value = 'POST';
             vmForm.reset();
             modal.classList.add('active');
@@ -442,12 +457,13 @@
         }
 
         function openEditModal(vm) {
-            modalTitle.innerText = 'Edit Data Virtual Machine';
-            vmForm.action = `/vms/${vm.id}`;
+            modalTitle.innerText = 'Edit Data VPS';
+            vmForm.action = `/vps/${vm.id}`;
             formMethod.value = 'PUT';
             
             document.getElementById('hostname').value = vm.hostname;
             document.getElementById('server_fisik_id').value = vm.server_fisik_id;
+            document.getElementById('tipe').value = vm.tipe;
             document.getElementById('ip_public_private').value = vm.ip_public_private;
             document.getElementById('os_distro').value = vm.os_distro;
             document.getElementById('allocated_cpu').value = vm.allocated_cpu;
@@ -456,8 +472,23 @@
             document.getElementById('fungsi_layanan').value = vm.fungsi_layanan;
             document.getElementById('vlan').value = vm.vlan || '';
             document.getElementById('status').value = vm.status;
-
+            
             modal.classList.add('active');
+        }
+
+        function openDetailModal(vm) {
+            document.getElementById('detail_hostname').innerText = vm.hostname;
+            document.getElementById('detail_ip').innerHTML = `<i class="ph ph-wifi-high"></i> ${vm.ip_public_private}`;
+            document.getElementById('detail_tipe').innerText = vm.tipe;
+            document.getElementById('detail_status').innerText = vm.status;
+            document.getElementById('detail_os_distro').innerText = vm.os_distro;
+            document.getElementById('detail_node').innerText = vm.server_fisik ? vm.server_fisik.nama_server : '-';
+            document.getElementById('detail_fungsi').innerText = vm.fungsi_layanan;
+            document.getElementById('detail_cpu').innerText = `${vm.allocated_cpu} Cores`;
+            document.getElementById('detail_ram').innerText = `${vm.allocated_ram_gb} GB`;
+            document.getElementById('detail_disk').innerText = `${vm.allocated_disk_gb} GB`;
+            document.getElementById('detail_vlan').innerText = vm.vlan || '-';
+            detailModal.classList.add('active');
         }
 
         function filterItems() {

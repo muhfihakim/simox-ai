@@ -22,7 +22,7 @@
             <div class="ai-chat-header">
                 <div>
                     <h4><i class="ph-fill ph-robot"></i> SIMOX AI Agent</h4>
-                    <small>Asisten Inventaris Diskominfo</small>
+                    <small>Asisten Inventaris VPS (VM & LXC)</small>
                 </div>
                 <button class="icon-btn" id="closeAiChat"><i class="ph ph-x"></i></button>
             </div>

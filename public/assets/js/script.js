@@ -109,12 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
     
-    // Close modal when clicking outside
-    if (createVmModal) {
-        createVmModal.addEventListener('click', (e) => {
-            if (e.target === createVmModal) closeModal();
-        });
-    }
+    // Close modal when clicking outside (global for all modals)
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+        }
+    });
 
     if (saveModalBtn) {
         saveModalBtn.addEventListener('click', () => {
@@ -181,57 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-    // --- Laporan Charts Configuration ---
-    const cpuBarCanvas = document.getElementById('cpuBarChart');
-    if(cpuBarCanvas) {
-        new Chart(cpuBarCanvas.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: ['pve-01', 'pve-02', 'pve-03'],
-                datasets: [
-                    { label: 'Kapasitas Total (Cores)', data: [32, 32, 16], backgroundColor: '#e2e8f0', borderRadius: 4 },
-                    { label: 'Teralokasi (Cores)', data: [28, 24, 8], backgroundColor: '#4f46e5', borderRadius: 4 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
-        });
-    }
 
-    const ramPieCanvas = document.getElementById('ramPieChart');
-    if(ramPieCanvas) {
-        new Chart(ramPieCanvas.getContext('2d'), {
-            type: 'pie',
-            data: {
-                labels: ['Bidang E-Gov', 'Bidang Statistik', 'Keuangan', 'BKPSDM', 'Lainnya'],
-                datasets: [{ data: [84, 48, 32, 16, 15], backgroundColor: ['#4f46e5', '#f97316', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 2, borderColor: '#ffffff' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-        });
-    }
-
-    const hddDoughnutCanvas = document.getElementById('hddDoughnutChart');
-    if(hddDoughnutCanvas) {
-        new Chart(hddDoughnutCanvas.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Terpakai (VM/LXC)', 'Sistem/Backup', 'Tersedia'],
-                datasets: [{ data: [2.1, 0.6, 1.5], backgroundColor: ['#f59e0b', '#64748b', '#e2e8f0'], borderWidth: 2, borderColor: '#ffffff' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right' } } }
-        });
-    }
-
-    const typePieCanvas = document.getElementById('typePieChart');
-    if(typePieCanvas) {
-        new Chart(typePieCanvas.getContext('2d'), {
-            type: 'pie',
-            data: {
-                labels: ['Virtual Machine (VM)', 'Container (LXC)'],
-                datasets: [{ data: [24, 45], backgroundColor: ['#8b5cf6', '#0ea5e9'], borderWidth: 2, borderColor: '#ffffff' }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
-    }
 
 // --- Toast Notification System ---
 window.showToast = function(message, type = 'info') {
