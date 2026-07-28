@@ -42,11 +42,13 @@ class DatabaseSeeder extends Seeder
         // Seed 16 VMs (2 VMs per Node)
         $osDistros = ['Ubuntu 22.04 LTS', 'Ubuntu 20.04 LTS', 'Windows Server 2022', 'Debian 12', 'AlmaLinux 9'];
         $fungsiList = ['Web Server E-Gov', 'Database Keuangan', 'API Gateway', 'Aplikasi Kepegawaian', 'File Sharing', 'Backup Server', 'Proxy Server', 'Monitoring'];
+        $tipeList = ['vm', 'lxc'];
 
         $vmCount = 1;
         foreach ($nodes as $index => $node) {
             for ($j = 1; $j <= 2; $j++) {
                 $os = $osDistros[array_rand($osDistros)];
+                $tipe = $tipeList[array_rand($tipeList)];
                 \App\Models\VirtualMachine::create([
                     'server_fisik_id' => $node->id,
                     'hostname' => 'vm-app-' . str_pad($vmCount, 2, '0', STR_PAD_LEFT),
@@ -58,6 +60,7 @@ class DatabaseSeeder extends Seeder
                     'os_distro' => $os,
                     'fungsi_layanan' => $fungsiList[array_rand($fungsiList)],
                     'vlan' => '10' . rand(1, 5),
+                    'tipe' => $tipe,
                 ]);
                 $vmCount++;
             }

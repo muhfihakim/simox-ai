@@ -46,18 +46,7 @@
                     <span class="text-danger">{{ $allNodes->where('status', '!=', 'Online')->count() }} Offline</span>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div>
-                        <span class="stat-title">Status Quorum</span>
-                        <h3 class="stat-value text-success">OK</h3>
-                    </div>
-                    <div class="stat-icon bg-green"><i class="ph ph-check-circle"></i></div>
-                </div>
-                <div class="stat-footer">
-                    <span class="text-muted">Corosync berjalan stabil</span>
-                </div>
-            </div>
+
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
@@ -165,7 +154,7 @@
                             $diskPct = $diskCapacity > 0 ? min(100, ($usedDisk / $diskCapacity) * 100) : 0;
                         @endphp
 
-                        <div class="text-xs text-muted mb-4">Uptime Tercatat: {{ $node->uptime ?? '-' }}</div>
+
 
                         <div class="resource-bar mb-2">
                             <div class="flex-between text-xs mb-1">

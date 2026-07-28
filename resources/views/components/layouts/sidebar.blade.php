@@ -9,24 +9,29 @@
 
     <nav class="sidebar-nav">
         <span class="nav-label">UTAMA</span>
-        <a href="{{ route('dashboard.index') }}" class="nav-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}"><i class="ph ph-squares-four"></i>
+        <a href="{{ route('dashboard.index') }}"
+            class="nav-item {{ request()->routeIs('dashboard.*') ? 'active' : '' }}"><i class="ph ph-squares-four"></i>
             <span>Dasbor</span></a>
-        <a href="{{ route('nodes.index') }}" class="nav-item {{ request()->routeIs('nodes.*') ? 'active' : '' }}"><i class="ph ph-hard-drive"></i> <span>Data
+        <a href="{{ route('nodes.index') }}" class="nav-item {{ request()->routeIs('nodes.*') ? 'active' : '' }}"><i
+                class="ph ph-hard-drive"></i> <span>Data
                 Node</span></a>
-        <a href="{{ route('vps.index') }}" class="nav-item {{ request()->routeIs('vps.*') ? 'active' : '' }}"><i class="ph ph-desktop"></i> <span>Inventaris VPS</span></a>
+        <a href="{{ route('vps.index') }}" class="nav-item {{ request()->routeIs('vps.*') ? 'active' : '' }}"><i
+                class="ph ph-desktop"></i> <span>Inventaris VPS</span></a>
 
-        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}"><i class="ph ph-chart-pie-slice"></i> <span>Laporan
+        <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}"><i
+                class="ph ph-chart-pie-slice"></i> <span>Laporan
                 Pemakaian</span></a>
 
-        <span class="nav-label mt-4">INTEGRASI</span>
+        {{-- <span class="nav-label mt-4">INTEGRASI</span>
         <a href="#" class="nav-item ai-item"><i class="ph ph-robot"></i> <span>AI Agent</span><span
                 class="badge ai-badge">Pro</span></a>
         <a href="#" class="nav-item"><i class="ph ph-arrows-clockwise"></i> <span>Sinkronisasi
-                PVE</span></a>
+                PVE</span></a> --}}
 
         <span class="nav-label mt-4">SISTEM</span>
-        <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><i class="ph ph-users"></i> <span>Pengguna Admin</span></a>
-        <a href="#" class="nav-item"><i class="ph ph-gear"></i> <span>Pengaturan</span></a>
+        <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><i
+                class="ph ph-users"></i> <span>Pengguna Admin</span></a>
+        {{-- <a href="#" class="nav-item"><i class="ph ph-gear"></i> <span>Pengaturan</span></a> --}}
     </nav>
 
     <div class="sidebar-footer">
