@@ -8,22 +8,45 @@ use Illuminate\Support\Facades\Log;
 
 class AiAgentController extends Controller
 {
-    private function executeOpenClaw($sessionId, $message) {
-        $escapedMessage = escapeshellarg($message);
-        $escapedSession = escapeshellarg($sessionId);
-        
-        // Tanpa 2>&1 agar stderr (log) tidak bercampur dengan stdout (JSON)
-        $command = "openclaw agent --agent main --session-id {$escapedSession} --message {$escapedMessage} --json";
-        $output = shell_exec($command);
-        
-        if ($output) {
-            $jsonStart = strpos($output, '{');
-            if ($jsonStart !== false) {
-                $jsonStr = substr($output, $jsonStart);
-                return json_decode($jsonStr, true);
-            }
+    private function executeOpenClaw($sessionId, $message)
+    {
+        $baseUrl = rtrim(config('services.openclaw.base_url', env('OPENCLAW_BASE_URL', 'http://203.2.151.17:18789')), '/');
+        $token = config('services.openclaw.token', env('OPENCLAW_TOKEN'));
+        $model = config('services.openclaw.model', env('OPENCLAW_MODEL', 'openclaw'));
+        $timeout = (int) config('services.openclaw.timeout', env('OPENCLAW_TIMEOUT', 300));
+
+        $client = Http::timeout($timeout);
+
+        if (!empty($token)) {
+            $client = $client->withToken($token);
         }
-        return null;
+
+        $url = $baseUrl . '/v1/chat/completions';
+
+        $payload = [
+            'model' => $model,
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => $message,
+                ],
+            ],
+            'user' => $sessionId,
+        ];
+
+        try {
+            $response = $client->post($url, $payload);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            Log::error("OpenClaw HTTP Error [{$response->status()}]: " . $response->body());
+            return null;
+        } catch (\Exception $e) {
+            Log::error('OpenClaw HTTP Exception: ' . $e->getMessage());
+            return null;
+        }
     }
 
     public function chat(Request $request)
@@ -41,38 +64,38 @@ class AiAgentController extends Controller
             // Set timeout agar PHP tidak berhenti jika agen AI butuh waktu berpikir yang lama
             set_time_limit(300);
 
-            // Eksekusi CLI OpenClaw
+            // Eksekusi HTTP OpenClaw Gateway
             $data = $this->executeOpenClaw($sessionId, $message);
 
             // Deteksi jika terjadi Context Overflow
-            if ($data && isset($data['result']['error'])) {
-                $errorMsg = $data['result']['error']['message'] ?? '';
-                if (strpos($errorMsg, 'Context overflow') !== false) {
-                    // Reset session secara otomatis
+            if ($data && isset($data['error'])) {
+                $errorMsg = $data['error']['message'] ?? '';
+                if (stripos($errorMsg, 'Context overflow') !== false) {
                     $this->executeOpenClaw($sessionId, '/reset');
-                    // Coba kirim ulang pesan user setelah reset
                     $data = $this->executeOpenClaw($sessionId, $message);
                 }
             }
 
             if ($data) {
-                // Untuk balasan sukses, OpenClaw mengembalikan di payloads[0]['text']
+                // Format OpenAI standard
+                if (isset($data['choices'][0]['message']['content'])) {
+                    return response()->json(['reply' => $data['choices'][0]['message']['content']]);
+                }
+                // Format native payloads fallback
                 if (isset($data['result']['payloads'][0]['text'])) {
-                    $reply = $data['result']['payloads'][0]['text'];
-                    return response()->json(['reply' => $reply]);
-                } 
-                // Untuk balasan error sistem (jika bukan overflow atau gagal recovery)
-                elseif (isset($data['result']['finalAssistantVisibleText'])) {
-                    $reply = $data['result']['finalAssistantVisibleText'];
-                    return response()->json(['reply' => $reply]);
+                    return response()->json(['reply' => $data['result']['payloads'][0]['text']]);
+                }
+                if (isset($data['result']['finalAssistantVisibleText'])) {
+                    return response()->json(['reply' => $data['result']['finalAssistantVisibleText']]);
                 }
             }
 
-            Log::error('OpenClaw CLI Error - Tidak ada output JSON valid.');
-            return response()->json(['reply' => 'Maaf, terjadi kesalahan saat mengeksekusi agen AI di server. (CLI Error)'], 500);
+            return response()->json([
+                'reply' => 'Maaf, terjadi kesalahan saat menghubungi gateway AI di server. Pastikan HTTP endpoint OpenClaw aktif.'
+            ], 500);
 
         } catch (\Exception $e) {
-            Log::error('OpenClaw CLI Exception: ' . $e->getMessage());
+            Log::error('OpenClaw Controller Exception: ' . $e->getMessage());
             return response()->json(['reply' => 'Maaf, agen AI sedang tidak aktif atau tidak dapat dijalankan.'], 500);
         }
     }

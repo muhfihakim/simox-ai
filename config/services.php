@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'openclaw' => [
+        'base_url' => env('OPENCLAW_BASE_URL', 'http://203.2.151.17:18789'),
+        'token' => env('OPENCLAW_TOKEN'),
+        'model' => env('OPENCLAW_MODEL', 'openclaw'),
+        'timeout' => env('OPENCLAW_TIMEOUT', 300),
+    ],
+
 ];
