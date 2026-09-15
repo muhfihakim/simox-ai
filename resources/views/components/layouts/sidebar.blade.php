@@ -22,11 +22,10 @@
                 class="ph ph-chart-pie-slice"></i> <span>Laporan
                 Pemakaian</span></a>
 
-        {{-- <span class="nav-label mt-4">INTEGRASI</span>
-        <a href="#" class="nav-item ai-item"><i class="ph ph-robot"></i> <span>AI Agent</span><span
-                class="badge ai-badge">Pro</span></a>
-        <a href="#" class="nav-item"><i class="ph ph-arrows-clockwise"></i> <span>Sinkronisasi
-                PVE</span></a> --}}
+        <span class="nav-label mt-4">INTEGRASI</span>
+        <a href="{{ route('ai.index') }}" class="nav-item ai-item {{ request()->routeIs('ai.*') ? 'active' : '' }}"><i
+                class="ph ph-robot"></i> <span>AI Agent</span><span
+                class="badge ai-badge">Live</span></a>
 
         <span class="nav-label mt-4">SISTEM</span>
         <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><i
@@ -35,8 +34,8 @@
     </nav>
 
     <div class="sidebar-footer">
-        <div class="api-status connected">
-            <span class="status-dot"></span> Status Sinkronisasi: Aktif
+        <div class="api-status checking" id="sidebarAgentStatus" title="Status Agen OpenClaw AI">
+            <span class="status-dot"></span> <span id="sidebarAgentText" class="status-text">OpenClaw: Memeriksa...</span>
         </div>
     </div>
 </aside>

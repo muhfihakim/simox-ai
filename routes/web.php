@@ -27,6 +27,11 @@ Route::middleware(['auth'])->group(function () {
     // Other routes
     Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/export', [\App\Http\Controllers\ReportController::class, 'exportPdf'])->name('reports.export');
+
+    // AI Agent Full Page & Endpoints
+    Route::get('/ai-agent', [AiAgentController::class, 'index'])->name('ai.index');
 });
 
+Route::get('/api/agent/status', [AiAgentController::class, 'status'])->name('api.agent.status');
+Route::post('/api/agent/reset', [AiAgentController::class, 'reset'])->name('api.agent.reset');
 Route::post('/api/chat', [AiAgentController::class, 'chat'])->name('api.chat');

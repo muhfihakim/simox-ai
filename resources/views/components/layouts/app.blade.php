@@ -18,13 +18,17 @@
         </main>
 
         <!-- AI Assistant Chat Widget -->
+        @if (!request()->routeIs('ai.*'))
         <div class="ai-chat-widget" id="aiChatWidget">
             <div class="ai-chat-header">
                 <div>
                     <h4><i class="ph-fill ph-robot"></i> SIMOX AI Agent</h4>
                     <small>Asisten Inventaris VPS (VM & LXC)</small>
                 </div>
-                <button class="icon-btn" id="closeAiChat"><i class="ph ph-x"></i></button>
+                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                    <a href="{{ route('ai.index') }}" class="icon-btn" title="Buka Halaman Penuh" style="color: white; text-decoration: none;"><i class="ph ph-arrows-out-simple"></i></a>
+                    <button class="icon-btn" id="closeAiChat"><i class="ph ph-x"></i></button>
+                </div>
             </div>
             <div class="ai-chat-body" id="aiChatBody">
                 <div class="chat-message bot">
@@ -37,6 +41,7 @@
                         class="ph-fill ph-paper-plane-right"></i></button>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Toasts Container -->

@@ -99,4 +99,58 @@ class AiAgentController extends Controller
             return response()->json(['reply' => 'Maaf, agen AI sedang tidak aktif atau tidak dapat dijalankan.'], 500);
         }
     }
+
+    public function index()
+    {
+        return view('ai.index');
+    }
+
+    public function status()
+    {
+        $baseUrl = rtrim(config('services.openclaw.base_url', env('OPENCLAW_BASE_URL', 'http://203.2.151.17:18789')), '/');
+        $token = config('services.openclaw.token', env('OPENCLAW_TOKEN'));
+
+        $startTime = microtime(true);
+
+        try {
+            $client = Http::timeout(5);
+            if (!empty($token)) {
+                $client = $client->withToken($token);
+            }
+
+            $response = $client->get($baseUrl . '/v1/models');
+            $latency = round((microtime(true) - $startTime) * 1000);
+
+            if ($response->successful()) {
+                $models = $response->json('data') ?? [];
+                return response()->json([
+                    'online' => true,
+                    'status' => 'Aktif',
+                    'latency_ms' => $latency,
+                    'models' => $models,
+                    'gateway' => $baseUrl,
+                ]);
+            }
+
+            return response()->json([
+                'online' => false,
+                'status' => 'Error (' . $response->status() . ')',
+                'latency_ms' => $latency,
+                'message' => $response->body(),
+            ], 502);
+        } catch (\Exception $e) {
+            return response()->json([
+                'online' => false,
+                'status' => 'Terputus',
+                'message' => $e->getMessage(),
+            ], 503);
+        }
+    }
+
+    public function reset()
+    {
+        $sessionId = 'simox-web-widget-global';
+        $this->executeOpenClaw($sessionId, '/reset');
+        return response()->json(['message' => 'Percakapan berhasil direset.']);
+    }
 }
