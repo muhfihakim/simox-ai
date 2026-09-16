@@ -33,9 +33,6 @@
                             style="font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
                             OpenClaw AI Assistant
                         </div>
-                        <small class="text-muted" style="font-size: 0.75rem;" id="fullpageEndpointInfo">
-                            Terhubung
-                        </small>
                     </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -60,7 +57,6 @@
                         <ul style="margin-left: 1.25rem; margin-bottom: 0.75rem; font-size: 0.85rem; line-height: 1.5;">
                             <li>Analisis inventaris Virtual Machine & Kontainer LXC</li>
                             <li>Informasi beban CPU, RAM, & Storage server node</li>
-                            <li>Rekomendasi optimasi dan troubleshooting infrastruktur Proxmox VE</li>
                         </ul>
                         <p style="margin-bottom: 0; font-size: 0.85rem;">Pilih pertanyaan cepat di bawah atau ketik
                             langsung pertanyaan Anda:</p>

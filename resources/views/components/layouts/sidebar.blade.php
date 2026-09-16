@@ -24,8 +24,7 @@
 
         <span class="nav-label mt-4">INTEGRASI</span>
         <a href="{{ route('ai.index') }}" class="nav-item ai-item {{ request()->routeIs('ai.*') ? 'active' : '' }}"><i
-                class="ph ph-robot"></i> <span>AI Agent</span><span
-                class="badge ai-badge">Live</span></a>
+                class="ph ph-robot"></i> <span>AI Agent</span></a>
 
         <span class="nav-label mt-4">SISTEM</span>
         <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><i
@@ -35,7 +34,8 @@
 
     <div class="sidebar-footer">
         <div class="api-status checking" id="sidebarAgentStatus" title="Status Agen OpenClaw AI">
-            <span class="status-dot"></span> <span id="sidebarAgentText" class="status-text">OpenClaw: Memeriksa...</span>
+            <span class="status-dot"></span> <span id="sidebarAgentText" class="status-text">OpenClaw:
+                Memeriksa...</span>
         </div>
     </div>
 </aside>

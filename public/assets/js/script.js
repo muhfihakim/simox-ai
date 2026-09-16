@@ -170,6 +170,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const message = aiChatInput.value.trim();
             if (!message) return;
 
+            // Trigger button animation & input flash
+            aiChatSendBtn.classList.add("btn-sending");
+            aiChatInput.classList.add("input-sent-flash");
+            setTimeout(() => {
+                aiChatSendBtn.classList.remove("btn-sending");
+                aiChatInput.classList.remove("input-sent-flash");
+            }, 600);
+
             // Add user message to UI
             const userMsgDiv = document.createElement("div");
             userMsgDiv.className = "chat-message user";
@@ -177,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
             userMsgDiv.querySelector(".msg-content").textContent = message;
             aiChatBody.appendChild(userMsgDiv);
             aiChatInput.value = "";
-            aiChatBody.scrollTop = aiChatBody.scrollHeight;
+            aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
 
             // Add loading indicator
             const botMsgDiv = document.createElement("div");
@@ -191,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
             aiChatBody.appendChild(botMsgDiv);
-            aiChatBody.scrollTop = aiChatBody.scrollHeight;
+            aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
 
             try {
                 const csrfToken = document
@@ -210,15 +218,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
+                contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = formatAiReply(
                     data.reply || "Tidak ada respons",
                 );
             } catch (error) {
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
+                contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = `<span style="color: var(--danger);">Maaf, terjadi kesalahan komunikasi dengan server.</span>`;
             }
-            aiChatBody.scrollTop = aiChatBody.scrollHeight;
+            aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
         };
 
         aiChatSendBtn.addEventListener("click", sendMessage);
@@ -241,6 +251,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const message = (customMessage || fullpageChatInput.value).trim();
             if (!message) return;
 
+            // Trigger button animation & input wrapper flash
+            const inputWrapper = document.querySelector(".ai-input-wrapper");
+            fullpageSendBtn.classList.add("btn-sending");
+            if (inputWrapper) inputWrapper.classList.add("input-sent-flash");
+            setTimeout(() => {
+                fullpageSendBtn.classList.remove("btn-sending");
+                if (inputWrapper) inputWrapper.classList.remove("input-sent-flash");
+            }, 600);
+
             // User message bubble
             const userDiv = document.createElement("div");
             userDiv.className = "chat-message user";
@@ -252,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
             fullpageChatBody.appendChild(userDiv);
 
             fullpageChatInput.value = "";
-            fullpageChatBody.scrollTop = fullpageChatBody.scrollHeight;
+            fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
 
             // Bot message thinking bubble
             const botDiv = document.createElement("div");
@@ -267,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
             fullpageChatBody.appendChild(botDiv);
-            fullpageChatBody.scrollTop = fullpageChatBody.scrollHeight;
+            fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
 
             try {
                 const csrfToken = document
@@ -286,16 +305,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
+                contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = formatAiReply(
                     data.reply || "Tidak ada respons dari agen.",
                 );
             } catch (error) {
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
+                contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = `<span style="color: var(--danger);"><i class="ph ph-warning-circle"></i> Gagal berkomunikasi dengan gateway AI.</span>`;
             }
 
-            fullpageChatBody.scrollTop = fullpageChatBody.scrollHeight;
+            fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
         };
 
         fullpageSendBtn.addEventListener("click", () => sendFullpageMessage());
