@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
-        // Add action bar for reports/analyses
+        // Add action bar for reports/analyses (copy only)
         let actionsHtml = "";
         const isReport =
             pdfMatch ||
@@ -222,13 +222,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isReport) {
             actionsHtml = `
                 <div class="msg-actions-bar">
-                    <button type="button" class="btn-msg-action btn-action-pdf" data-filename="${escapeHtml(
-                        filename,
-                    )}" data-source="${escapeHtml(
-                        sourcePath,
-                    )}" title="Unduh Analisis sebagai PDF">
-                        <i class="ph-bold ph-file-pdf"></i> Unduh PDF
-                    </button>
                     <button type="button" class="btn-msg-action btn-action-copy" title="Salin Jawaban">
                         <i class="ph ph-copy"></i> Salin
                     </button>
