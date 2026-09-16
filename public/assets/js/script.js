@@ -28,10 +28,76 @@ document.addEventListener("DOMContentLoaded", () => {
     if (sidebarOverlay)
         sidebarOverlay.addEventListener("click", closeMobileSidebar);
 
+    // --- Escape HTML Helper ---
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // --- Global PDF Download Function ---
+    window.downloadAiReportPdf = async function (
+        content,
+        filename = "laporan-analisis.pdf",
+        title = "",
+        source = "",
+    ) {
+        try {
+            showToast("Menyiapkan dokumen PDF...", "info");
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
+            const response = await fetch("/api/ai/export-pdf", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    Accept: "application/pdf",
+                },
+                body: JSON.stringify({ content, filename, title, source }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Gagal generate PDF dari server.");
+            }
+
+            // Dapatkan nama file dari header jika ada
+            let targetFilename = filename;
+            const disposition = response.headers.get("Content-Disposition");
+            if (disposition && disposition.indexOf("filename=") !== -1) {
+                const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(
+                    disposition,
+                );
+                if (matches != null && matches[1]) {
+                    targetFilename = matches[1].replace(/['"]/g, "").trim();
+                }
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = targetFilename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            a.remove();
+            showToast("Dokumen PDF berhasil diunduh!", "success");
+        } catch (e) {
+            console.error("PDF Download error:", e);
+            showToast("Gagal mengunduh dokumen PDF.", "error");
+        }
+    };
+
     // --- Markdown / Formatter Helper ---
     function formatAiReply(text) {
         if (!text) return "Tidak ada respons";
 
+        let renderedHtml = "";
         if (
             typeof marked !== "undefined" &&
             typeof marked.parse === "function"
@@ -46,39 +112,131 @@ document.addEventListener("DOMContentLoaded", () => {
                     typeof DOMPurify !== "undefined" &&
                     typeof DOMPurify.sanitize === "function"
                 ) {
-                    return DOMPurify.sanitize(rawHtml);
+                    renderedHtml = DOMPurify.sanitize(rawHtml);
+                } else {
+                    renderedHtml = rawHtml;
                 }
-                return rawHtml;
             } catch (e) {
                 console.error("Markdown parse error:", e);
             }
         }
 
-        // Fallback Formatter if marked is not loaded
-        let div = document.createElement("div");
-        div.textContent = text;
-        let safeText = div.innerHTML;
+        if (!renderedHtml) {
+            let div = document.createElement("div");
+            div.textContent = text;
+            let safeText = div.innerHTML;
 
-        // Code blocks ```code```
-        safeText = safeText.replace(
-            /```([\s\S]*?)```/g,
-            "<pre><code>$1</code></pre>",
+            // Code blocks ```code```
+            safeText = safeText.replace(
+                /```([\s\S]*?)```/g,
+                "<pre><code>$1</code></pre>",
+            );
+            // Inline code `code`
+            safeText = safeText.replace(/`([^`]+)`/g, "<code>$1</code>");
+            // Headings
+            safeText = safeText.replace(/^### (.*$)/gm, "<h4>$1</h4>");
+            safeText = safeText.replace(/^## (.*$)/gm, "<h3>$1</h3>");
+            safeText = safeText.replace(/^# (.*$)/gm, "<h2>$1</h2>");
+            // Bold **text**
+            safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            // Italic *text*
+            safeText = safeText.replace(/\*([^\*]+)\*/g, "<em>$1</em>");
+            // Bullet points * or -
+            safeText = safeText.replace(/^[\*\-]\s+(.*)$/gm, "&bull; $1");
+            // Line breaks
+            safeText = safeText.replace(/\n/g, "<br>");
+            renderedHtml = safeText;
+        }
+
+        // 1. Detect assistant-media URL or OpenClaw workspace path
+        const urlMatch =
+            text.match(
+                /https?:\/\/[^\s\)\'\"\]]+__openclaw__\/assistant-media\?[^\s\)\'\"\]]+/i,
+            ) || text.match(/\/__openclaw__\/assistant-media\?[^\s\)\'\"\]]+/i);
+        let sourcePath = "";
+        if (urlMatch) {
+            sourcePath = urlMatch[0];
+        } else {
+            const workspaceMatch =
+                text.match(/(\/root\/\.openclaw\/workspace\/[^\s\)\'\"\]]+\.pdf)/i) ||
+                text.match(/Lokasi:\s*([^\s\n\r]+\.pdf)/i);
+            if (workspaceMatch) {
+                sourcePath = workspaceMatch[1];
+            }
+        }
+
+        // 2. Detect filename
+        const pdfMatch =
+            text.match(
+                /(?:Nama\s*file|File|Berkas|Dokumen|Lokasi|Output)[\s\S]{0,60}?([a-zA-Z0-9_\-\.]+\.pdf)/i,
+            ) || text.match(/([a-zA-Z0-9_\-\.]+\.pdf)/i);
+        let filename = pdfMatch
+            ? pdfMatch[1]
+            : sourcePath
+            ? sourcePath.split("/").pop()
+            : "laporan-analisis.pdf";
+
+        if (filename.includes("?") || filename.includes("=")) {
+            filename = "laporan-analisis.pdf";
+        }
+
+        // Rewrite any raw OpenClaw assistant-media URLs in HTML to SIMOX proxy
+        renderedHtml = renderedHtml.replace(
+            /(?:https?:\/\/[^\s"'<>]*)?\/__openclaw__\/assistant-media\?source=([^"'<>&]+)(?:[^"'<>]*)/gi,
+            (match, p1) =>
+                `/api/ai/download-file?source=${encodeURIComponent(
+                    decodeURIComponent(p1),
+                )}`,
         );
-        // Inline code `code`
-        safeText = safeText.replace(/`([^`]+)`/g, "<code>$1</code>");
-        // Headings
-        safeText = safeText.replace(/^### (.*$)/gm, "<h4>$1</h4>");
-        safeText = safeText.replace(/^## (.*$)/gm, "<h3>$1</h3>");
-        safeText = safeText.replace(/^# (.*$)/gm, "<h2>$1</h2>");
-        // Bold **text**
-        safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-        // Italic *text*
-        safeText = safeText.replace(/\*([^\*]+)\*/g, "<em>$1</em>");
-        // Bullet points * or -
-        safeText = safeText.replace(/^[\*\-]\s+(.*)$/gm, "&bull; $1");
-        // Line breaks
-        safeText = safeText.replace(/\n/g, "<br>");
-        return safeText;
+
+        let cardHtml = "";
+        if (pdfMatch || sourcePath) {
+            cardHtml = `
+                <div class="ai-pdf-download-card">
+                    <div class="pdf-card-icon"><i class="ph-fill ph-file-pdf"></i></div>
+                    <div class="pdf-card-details">
+                        <div class="pdf-card-name">${escapeHtml(filename)}</div>
+                        <div class="pdf-card-desc">${
+                            sourcePath
+                                ? "Dokumen Resmi OpenClaw • Siap Diunduh"
+                                : "Dokumen Analisis Proxmox VE • Siap Diunduh"
+                        }</div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm btn-download-pdf-card" data-filename="${escapeHtml(
+                        filename,
+                    )}" data-source="${escapeHtml(sourcePath)}">
+                        <i class="ph-bold ph-download-simple"></i> Unduh PDF
+                    </button>
+                </div>
+            `;
+        }
+
+        // Add action bar for reports/analyses
+        let actionsHtml = "";
+        const isReport =
+            pdfMatch ||
+            sourcePath ||
+            text.includes("|") ||
+            text.length > 140 ||
+            text.includes("###");
+        if (isReport) {
+            actionsHtml = `
+                <div class="msg-actions-bar">
+                    <button type="button" class="btn-msg-action btn-action-pdf" data-filename="${escapeHtml(
+                        filename,
+                    )}" data-source="${escapeHtml(
+                        sourcePath,
+                    )}" title="Unduh Analisis sebagai PDF">
+                        <i class="ph-bold ph-file-pdf"></i> Unduh PDF
+                    </button>
+                    <button type="button" class="btn-msg-action btn-action-copy" title="Salin Jawaban">
+                        <i class="ph ph-copy"></i> Salin
+                    </button>
+                </div>
+            `;
+        }
+
+        return renderedHtml + cardHtml + actionsHtml;
     }
 
     // --- OpenClaw Agent Status Checking ---
@@ -216,12 +374,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const data = await response.json();
+                const rawReply = data.reply || "Tidak ada respons";
+                botMsgDiv.dataset.rawText = rawReply;
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
-                contentEl.innerHTML = formatAiReply(
-                    data.reply || "Tidak ada respons",
-                );
+                contentEl.innerHTML = formatAiReply(rawReply);
             } catch (error) {
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
@@ -303,12 +461,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const data = await response.json();
+                const rawReply = data.reply || "Tidak ada respons dari agen.";
+                botDiv.dataset.rawText = rawReply;
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
-                contentEl.innerHTML = formatAiReply(
-                    data.reply || "Tidak ada respons dari agen.",
-                );
+                contentEl.innerHTML = formatAiReply(rawReply);
             } catch (error) {
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
@@ -373,6 +531,73 @@ document.addEventListener("DOMContentLoaded", () => {
             sendFullpageMessage(queryPrompt);
         }
     }
+
+    // Global event listener for AI PDF Download and Copy actions (widget + fullpage)
+    document.addEventListener("click", async (e) => {
+        const pdfBtn = e.target.closest(
+            ".btn-download-pdf-card, .btn-action-pdf",
+        );
+        if (pdfBtn) {
+            e.preventDefault();
+            const chatMsg = pdfBtn.closest(".chat-message");
+            const filename =
+                pdfBtn.getAttribute("data-filename") ||
+                "laporan-analisis.pdf";
+            const source = pdfBtn.getAttribute("data-source") || "";
+            let content = chatMsg?.dataset?.rawText;
+            if (!content) {
+                const contentEl = chatMsg?.querySelector(".msg-content");
+                if (contentEl) {
+                    const clone = contentEl.cloneNode(true);
+                    clone
+                        .querySelectorAll(
+                            ".ai-pdf-download-card, .msg-actions-bar",
+                        )
+                        .forEach((el) => el.remove());
+                    content = clone.innerText;
+                }
+            }
+            if (content || source) {
+                await window.downloadAiReportPdf(content, filename, "", source);
+            } else {
+                showToast("Konten laporan tidak ditemukan.", "warning");
+            }
+            return;
+        }
+
+        const copyBtn = e.target.closest(".btn-action-copy");
+        if (copyBtn) {
+            e.preventDefault();
+            const chatMsg = copyBtn.closest(".chat-message");
+            let content = chatMsg?.dataset?.rawText;
+            if (!content) {
+                const contentEl = chatMsg?.querySelector(".msg-content");
+                if (contentEl) {
+                    const clone = contentEl.cloneNode(true);
+                    clone
+                        .querySelectorAll(
+                            ".ai-pdf-download-card, .msg-actions-bar",
+                        )
+                        .forEach((el) => el.remove());
+                    content = clone.innerText;
+                }
+            }
+            if (content) {
+                navigator.clipboard
+                    .writeText(content)
+                    .then(() => {
+                        showToast(
+                            "Teks berhasil disalin ke clipboard!",
+                            "success",
+                        );
+                    })
+                    .catch(() => {
+                        showToast("Gagal menyalin teks.", "error");
+                    });
+            }
+            return;
+        }
+    });
 
     // --- Modal Logic ---
     const createVmModal = document.getElementById("createVmModal");

@@ -35,3 +35,6 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/api/agent/status', [AiAgentController::class, 'status'])->name('api.agent.status');
 Route::post('/api/agent/reset', [AiAgentController::class, 'reset'])->name('api.agent.reset');
 Route::post('/api/chat', [AiAgentController::class, 'chat'])->name('api.chat');
+Route::post('/api/ai/export-pdf', [AiAgentController::class, 'exportPdf'])->name('api.ai.export_pdf');
+Route::match(['get', 'post'], '/api/ai/download-file', [AiAgentController::class, 'downloadFile'])->name('api.ai.download_file');
+
