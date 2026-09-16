@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- Markdown / Formatter Helper ---
-    function formatAiReply(text) {
+    function formatAiReply(text, duration = null) {
         if (!text) return "Tidak ada respons";
 
         let renderedHtml = "";
@@ -211,23 +211,21 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
-        // Add action bar for reports/analyses (copy only)
-        let actionsHtml = "";
-        const isReport =
-            pdfMatch ||
-            sourcePath ||
-            text.includes("|") ||
-            text.length > 140 ||
-            text.includes("###");
-        if (isReport) {
-            actionsHtml = `
-                <div class="msg-actions-bar">
-                    <button type="button" class="btn-msg-action btn-action-copy" title="Salin Jawaban">
-                        <i class="ph ph-copy"></i> Salin
-                    </button>
-                </div>
-            `;
-        }
+        // Add action bar (duration badge + copy)
+        let actionsHtml = `
+            <div class="msg-actions-bar">
+                ${
+                    duration
+                        ? `<span class="msg-duration-badge" title="Waktu proses respons"><i class="ph-bold ph-timer"></i> ${escapeHtml(
+                              duration,
+                          )}s</span>`
+                        : ""
+                }
+                <button type="button" class="btn-msg-action btn-action-copy" title="Salin Jawaban">
+                    <i class="ph ph-copy"></i> Salin
+                </button>
+            </div>
+        `;
 
         return renderedHtml + cardHtml + actionsHtml;
     }
@@ -338,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
             aiChatInput.value = "";
             aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
 
-            // Add loading indicator
+            // Add loading indicator with live timer
             const botMsgDiv = document.createElement("div");
             botMsgDiv.className = "chat-message bot";
             botMsgDiv.innerHTML = `
@@ -346,16 +344,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="typing-indicator">
                         <div class="typing-dots"><span></span><span></span><span></span></div>
                         <span class="typing-text">Sedang berpikir...</span>
+                        <span class="typing-timer"><i class="ph ph-timer"></i> <span class="timer-sec">0.0</span>s</span>
                     </div>
                 </div>
             `;
             aiChatBody.appendChild(botMsgDiv);
             aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
 
+            const startTime = Date.now();
+            const timerSecEl = botMsgDiv.querySelector(".timer-sec");
+            const timerInterval = setInterval(() => {
+                if (timerSecEl) {
+                    timerSecEl.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+                }
+            }, 100);
+
             try {
                 const csrfToken = document
                     .querySelector('meta[name="csrf-token"]')
-                    .getAttribute("content");
+                    ?.getAttribute("content");
                 const response = await fetch("/api/chat", {
                     method: "POST",
                     headers: {
@@ -366,18 +373,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ message }),
                 });
 
+                const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
                 const data = await response.json();
                 const rawReply = data.reply || "Tidak ada respons";
                 botMsgDiv.dataset.rawText = rawReply;
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
-                contentEl.innerHTML = formatAiReply(rawReply);
+                contentEl.innerHTML = formatAiReply(rawReply, durationSec);
             } catch (error) {
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = `<span style="color: var(--danger);">Maaf, terjadi kesalahan komunikasi dengan server.</span>`;
+            } finally {
+                clearInterval(timerInterval);
             }
             aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
         };
@@ -424,7 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
             fullpageChatInput.value = "";
             fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
 
-            // Bot message thinking bubble
+            // Bot message thinking bubble with live timer
             const botDiv = document.createElement("div");
             botDiv.className = "chat-message bot";
             botDiv.innerHTML = `
@@ -433,16 +443,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="typing-indicator">
                         <div class="typing-dots"><span></span><span></span><span></span></div>
                         <span class="typing-text">Sedang berpikir...</span>
+                        <span class="typing-timer"><i class="ph ph-timer"></i> <span class="timer-sec">0.0</span>s</span>
                     </div>
                 </div>
             `;
             fullpageChatBody.appendChild(botDiv);
             fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
 
+            const startTime = Date.now();
+            const timerSecEl = botDiv.querySelector(".timer-sec");
+            const timerInterval = setInterval(() => {
+                if (timerSecEl) {
+                    timerSecEl.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+                }
+            }, 100);
+
             try {
                 const csrfToken = document
                     .querySelector('meta[name="csrf-token"]')
-                    .getAttribute("content");
+                    ?.getAttribute("content");
                 const response = await fetch("/api/chat", {
                     method: "POST",
                     headers: {
@@ -453,18 +472,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ message }),
                 });
 
+                const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
                 const data = await response.json();
                 const rawReply = data.reply || "Tidak ada respons dari agen.";
                 botDiv.dataset.rawText = rawReply;
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
-                contentEl.innerHTML = formatAiReply(rawReply);
+                contentEl.innerHTML = formatAiReply(rawReply, durationSec);
             } catch (error) {
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = `<span style="color: var(--danger);"><i class="ph ph-warning-circle"></i> Gagal berkomunikasi dengan gateway AI.</span>`;
+            } finally {
+                clearInterval(timerInterval);
             }
 
             fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });

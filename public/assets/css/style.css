@@ -766,6 +766,48 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; color: var(--text-main); }
     50% { opacity: 1; }
 }
 
+.typing-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.74rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600;
+    color: var(--primary, #a855f7);
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    padding: 0.12rem 0.45rem;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+}
+.typing-timer i {
+    font-size: 0.82rem;
+    animation: spinSlow 3s linear infinite;
+}
+@keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.msg-duration-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 500;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    background: var(--background, rgba(0, 0, 0, 0.03));
+    border: 1px solid var(--border);
+    margin-right: auto;
+}
+.msg-duration-badge i {
+    color: var(--primary, #a855f7);
+    font-size: 0.82rem;
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
