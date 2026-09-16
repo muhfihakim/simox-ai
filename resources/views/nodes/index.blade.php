@@ -7,8 +7,6 @@
                 <p>Inventaris server fisik yang menyusun kluster Diskominfo Subang.</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-outline" onclick="window.location.reload()"><i class="ph ph-arrows-clockwise"></i>
-                    Sinkronisasi</button>
                 <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat Node Baru</button>
             </div>
         </div>

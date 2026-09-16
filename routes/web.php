@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AiAgentController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ServerFisikController;
 use App\Http\Controllers\VirtualMachineController;
 use App\Http\Controllers\UserController;
@@ -16,9 +17,8 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('dashboard.index');
     });
 
-    Route::get('/dashboard', function () {
-        return view('dashboard.index');
-    })->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/api/dashboard/insights', [DashboardController::class, 'aiInsights'])->name('api.dashboard.insights');
     
     Route::resource('nodes', ServerFisikController::class)->names('nodes');
     Route::resource('vps', VirtualMachineController::class)->names('vps');

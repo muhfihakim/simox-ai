@@ -31,6 +31,30 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Markdown / Formatter Helper ---
     function formatAiReply(text) {
         if (!text) return "Tidak ada respons";
+
+        if (
+            typeof marked !== "undefined" &&
+            typeof marked.parse === "function"
+        ) {
+            try {
+                marked.setOptions({
+                    gfm: true,
+                    breaks: true,
+                });
+                const rawHtml = marked.parse(text);
+                if (
+                    typeof DOMPurify !== "undefined" &&
+                    typeof DOMPurify.sanitize === "function"
+                ) {
+                    return DOMPurify.sanitize(rawHtml);
+                }
+                return rawHtml;
+            } catch (e) {
+                console.error("Markdown parse error:", e);
+            }
+        }
+
+        // Fallback Formatter if marked is not loaded
         let div = document.createElement("div");
         div.textContent = text;
         let safeText = div.innerHTML;
@@ -38,15 +62,18 @@ document.addEventListener("DOMContentLoaded", () => {
         // Code blocks ```code```
         safeText = safeText.replace(
             /```([\s\S]*?)```/g,
-            '<pre style="background: rgba(0,0,0,0.06); padding: 0.6rem; border-radius: 4px; overflow-x: auto; margin: 0.5rem 0; font-family: monospace; font-size: 0.85em;"><code>$1</code></pre>',
+            "<pre><code>$1</code></pre>",
         );
         // Inline code `code`
-        safeText = safeText.replace(
-            /`([^`]+)`/g,
-            '<code style="background: rgba(0,0,0,0.06); padding: 0.1rem 0.35rem; border-radius: 3px; font-family: monospace; font-size: 0.85em;">$1</code>',
-        );
+        safeText = safeText.replace(/`([^`]+)`/g, "<code>$1</code>");
+        // Headings
+        safeText = safeText.replace(/^### (.*$)/gm, "<h4>$1</h4>");
+        safeText = safeText.replace(/^## (.*$)/gm, "<h3>$1</h3>");
+        safeText = safeText.replace(/^# (.*$)/gm, "<h2>$1</h2>");
         // Bold **text**
         safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        // Italic *text*
+        safeText = safeText.replace(/\*([^\*]+)\*/g, "<em>$1</em>");
         // Bullet points * or -
         safeText = safeText.replace(/^[\*\-]\s+(.*)$/gm, "&bull; $1");
         // Line breaks
@@ -156,9 +183,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const botMsgDiv = document.createElement("div");
             botMsgDiv.className = "chat-message bot";
             botMsgDiv.innerHTML = `
-                <div class="msg-content typing-indicator-content">
-                    <div class="typing-dots"><span></span><span></span><span></span></div>
-                    <span class="typing-text">Sedang berpikir...</span>
+                <div class="msg-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
+                        <span class="typing-text">Sedang berpikir...</span>
+                    </div>
                 </div>
             `;
             aiChatBody.appendChild(botMsgDiv);
@@ -179,11 +208,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const data = await response.json();
-                botMsgDiv.querySelector(".msg-content").innerHTML =
-                    formatAiReply(data.reply || "Tidak ada respons");
+                const contentEl = botMsgDiv.querySelector(".msg-content");
+                contentEl.classList.remove("typing-indicator-content");
+                contentEl.innerHTML = formatAiReply(
+                    data.reply || "Tidak ada respons",
+                );
             } catch (error) {
-                botMsgDiv.querySelector(".msg-content").innerHTML =
-                    `<span style="color: var(--danger);">Maaf, terjadi kesalahan komunikasi dengan server.</span>`;
+                const contentEl = botMsgDiv.querySelector(".msg-content");
+                contentEl.classList.remove("typing-indicator-content");
+                contentEl.innerHTML = `<span style="color: var(--danger);">Maaf, terjadi kesalahan komunikasi dengan server.</span>`;
             }
             aiChatBody.scrollTop = aiChatBody.scrollHeight;
         };
@@ -226,9 +259,11 @@ document.addEventListener("DOMContentLoaded", () => {
             botDiv.className = "chat-message bot";
             botDiv.innerHTML = `
                 <div class="chat-avatar bot-avatar"><i class="ph-fill ph-robot"></i></div>
-                <div class="msg-content typing-indicator-content">
-                    <div class="typing-dots"><span></span><span></span><span></span></div>
-                    <span class="typing-text">OpenClaw sedang menganalisis...</span>
+                <div class="msg-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
+                        <span class="typing-text">Sedang berpikir...</span>
+                    </div>
                 </div>
             `;
             fullpageChatBody.appendChild(botDiv);
@@ -249,12 +284,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const data = await response.json();
-                botDiv.querySelector(".msg-content").innerHTML = formatAiReply(
+                const contentEl = botDiv.querySelector(".msg-content");
+                contentEl.classList.remove("typing-indicator-content");
+                contentEl.innerHTML = formatAiReply(
                     data.reply || "Tidak ada respons dari agen.",
                 );
             } catch (error) {
-                botDiv.querySelector(".msg-content").innerHTML =
-                    `<span style="color: var(--danger);"><i class="ph ph-warning-circle"></i> Gagal berkomunikasi dengan gateway AI.</span>`;
+                const contentEl = botDiv.querySelector(".msg-content");
+                contentEl.classList.remove("typing-indicator-content");
+                contentEl.innerHTML = `<span style="color: var(--danger);"><i class="ph ph-warning-circle"></i> Gagal berkomunikasi dengan gateway AI.</span>`;
             }
 
             fullpageChatBody.scrollTop = fullpageChatBody.scrollHeight;
@@ -305,6 +343,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     showToast("Gagal mereset sesi percakapan.", "error");
                 }
             });
+        }
+
+        // Auto-send prompt from URL query string (?prompt=...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryPrompt = urlParams.get("prompt");
+        if (queryPrompt) {
+            sendFullpageMessage(queryPrompt);
         }
     }
 
@@ -411,6 +456,91 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 interaction: { mode: "nearest", axis: "x", intersect: false },
             },
+        });
+    }
+
+    // --- Dashboard AI Insights Refresh Logic ---
+    const refreshAiInsightsBtn = document.getElementById(
+        "refreshAiInsightsBtn",
+    );
+    const refreshAiInsightsIcon = document.getElementById(
+        "refreshAiInsightsIcon",
+    );
+    const aiAnalysisStatusText = document.getElementById(
+        "aiAnalysisStatusText",
+    );
+    const aiInsightsTableBody = document.getElementById("aiInsightsTableBody");
+
+    if (refreshAiInsightsBtn && aiInsightsTableBody) {
+        refreshAiInsightsBtn.addEventListener("click", async () => {
+            refreshAiInsightsBtn.disabled = true;
+            if (refreshAiInsightsIcon)
+                refreshAiInsightsIcon.classList.add("ph-spin");
+            if (aiAnalysisStatusText)
+                aiAnalysisStatusText.textContent = "Menganalisis...";
+
+            try {
+                const res = await fetch("/api/dashboard/insights?refresh=1");
+                const data = await res.json();
+
+                if (data.success && Array.isArray(data.insights)) {
+                    aiInsightsTableBody.innerHTML = "";
+                    if (data.insights.length === 0) {
+                        aiInsightsTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="2" class="text-center text-muted py-3">
+                                    Belum ada insight aktif. Klik tombol <strong>Analisis AI Sekarang</strong> di atas.
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        data.insights.forEach((insight) => {
+                            const level = insight.level || "info";
+                            let badgeClass = "bg-info-light text-info";
+                            let icon = "ph-info";
+
+                            if (level === "danger") {
+                                badgeClass = "bg-danger-light text-danger";
+                                icon = "ph-warning-octagon";
+                            } else if (level === "warning") {
+                                badgeClass = "bg-warning-light text-warning";
+                                icon = "ph-warning";
+                            } else if (level === "success") {
+                                badgeClass = "bg-success-light text-success";
+                                icon = "ph-check-circle";
+                            }
+
+                            const tr = document.createElement("tr");
+                            tr.innerHTML = `
+                                <td>
+                                    <span class="badge ${badgeClass}">
+                                        <i class="ph ${icon}"></i> ${insight.badge || level}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>${insight.title}</strong><br>
+                                    <span class="text-muted text-xs">${insight.description}</span>
+                                </td>
+                            `;
+                            aiInsightsTableBody.appendChild(tr);
+                        });
+                    }
+                    const sourceText =
+                        data.source === "openclaw" ? "OpenClaw AI" : "Sistem";
+                    showToast(
+                        `Analisis ${sourceText} berhasil diperbarui (${data.updated_at}).`,
+                        "success",
+                    );
+                }
+            } catch (err) {
+                showToast("Gagal memperbarui analisis AI.", "danger");
+            } finally {
+                refreshAiInsightsBtn.disabled = false;
+                if (refreshAiInsightsIcon)
+                    refreshAiInsightsIcon.classList.remove("ph-spin");
+                if (aiAnalysisStatusText)
+                    aiAnalysisStatusText.textContent = "Analisis AI Sekarang";
+            }
         });
     }
 });

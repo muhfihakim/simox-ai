@@ -7,8 +7,6 @@
                 <p>Manajemen dan pendataan alokasi Mesin Virtual kluster Diskominfo Subang.</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-outline" onclick="window.location.reload()"><i
-                        class="ph ph-arrows-clockwise"></i> Sinkronisasi</button>
                 <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat VPS Baru</button>
             </div>
         </div>

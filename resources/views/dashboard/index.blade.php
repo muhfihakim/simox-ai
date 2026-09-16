@@ -7,8 +7,6 @@
                 <p>Pendataan dan pengelolaan infrastruktur virtualisasi Diskominfo Subang.</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-outline" onclick="showToast('Menyinkronkan data dari server...', 'info')"><i
-                        class="ph ph-arrows-clockwise"></i> Sinkronisasi</button>
                 <button class="btn btn-primary" id="openModalBtn"><i class="ph ph-plus"></i> Catat
                     VM/LXC</button>
             </div>
@@ -20,110 +18,142 @@
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Total Server (Node)</span>
-                        <h3 class="stat-value">3</h3>
+                        <h3 class="stat-value">{{ $totalNodes ?? 0 }}</h3>
                     </div>
                     <div class="stat-icon bg-blue"><i class="ph ph-hard-drive"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success"><i class="ph ph-check-circle"></i> Data Sinkron</span>
+                    <span class="text-success"><i class="ph ph-check-circle"></i> {{ $onlineNodes ?? 0 }} Node Online</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Inventaris VM</span>
-                        <h3 class="stat-value">24</h3>
+                        <h3 class="stat-value">{{ $totalVms ?? 0 }}</h3>
                     </div>
                     <div class="stat-icon bg-purple"><i class="ph ph-desktop"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success">18 Aktif</span> &bull; <span class="text-danger">6
-                        Nonaktif</span>
+                    <span class="text-success">{{ $activeVms ?? 0 }} Aktif</span> &bull; <span class="text-danger">{{ $inactiveVms ?? 0 }} Nonaktif</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Inventaris Kontainer</span>
-                        <h3 class="stat-value">45</h3>
+                        <h3 class="stat-value">{{ $totalLxc ?? 0 }}</h3>
                     </div>
                     <div class="stat-icon bg-orange"><i class="ph ph-box-arrow-down"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success">42 Aktif</span> &bull; <span class="text-danger">3
-                        Nonaktif</span>
+                    <span class="text-success">{{ $activeLxc ?? 0 }} Aktif</span> &bull; <span class="text-danger">{{ $inactiveLxc ?? 0 }} Nonaktif</span>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
                         <span class="stat-title">Kapasitas Tercatat</span>
-                        <h3 class="stat-value">4.2 TB</h3>
+                        <h3 class="stat-value">{{ round(($totalCapacityGb ?? 0) / 1000, 1) }} TB</h3>
                     </div>
                     <div class="stat-icon bg-green"><i class="ph ph-database"></i></div>
                 </div>
                 <div class="stat-footer">
                     <div class="progress-bar-container">
-                        <div class="progress-bar bg-green" style="width: 65%;"></div>
+                        <div class="progress-bar bg-green" style="width: {{ min($usagePercent ?? 0, 100) }}%;"></div>
                     </div>
-                    <span class="text-muted mt-1 d-block">Teralokasi 2.7 TB (65%)</span>
+                    <span class="text-muted mt-1 d-block">Teralokasi {{ round(($totalAllocatedDiskGb ?? 0) / 1000, 1) }} TB ({{ $usagePercent ?? 0 }}%)</span>
                 </div>
             </div>
         </div>
 
         <!-- Charts & Table -->
         <div class="content-grid">
-            <!-- Resource Usage Chart -->
+            <!-- Beban Alokasi Node -->
             <div class="card col-span-1">
                 <div class="card-header flex-between">
-                    <h3 class="card-title">Tren Utilisasi</h3>
-                    <select class="select-sm">
-                        <option>Hari Ini</option>
-                        <option>Pekan Ini</option>
-                    </select>
+                    <h3 class="card-title" style="display: flex; align-items: center; gap: 0.4rem;"><i class="ph ph-cpu"></i> Beban Alokasi Node</h3>
+                    <span class="badge bg-purple-light text-purple" style="font-size: 0.72rem;">{{ $totalNodes ?? 0 }} Node</span>
                 </div>
-                <div class="card-body">
-                    <canvas id="resourceChart" height="200"></canvas>
+                <div class="card-body" style="padding: 0.9rem 1.1rem;">
+                    <div class="node-load-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 290px; overflow-y: auto; padding-right: 0.25rem;">
+                        @forelse ($nodeLoads ?? [] as $node)
+                            <div class="node-load-item">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; font-size: 0.82rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                        <span class="status-dot" style="width: 7px; height: 7px; border-radius: 50%; display: inline-block; background-color: {{ $node->status === 'Online' ? 'var(--success)' : 'var(--danger)' }};"></span>
+                                        <a href="{{ route('nodes.show', $node->id) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">{{ $node->nama_server }}</a>
+                                        <span class="text-muted" style="font-size: 0.75rem;">({{ $node->vm_count }} VM)</span>
+                                    </div>
+                                    <span style="font-size: 0.78rem; font-weight: 500;" class="{{ $node->badge_class }}">
+                                        {{ $node->ram_used }} / {{ $node->kapasitas_ram }} GB
+                                        <span style="font-weight: 600;">({{ $node->ram_pct }}%)</span>
+                                    </span>
+                                </div>
+                                <div class="progress-bar-container" style="height: 6px; background: rgba(0,0,0,0.06); border-radius: 999px; overflow: hidden;">
+                                    <div class="progress-bar" style="width: {{ min($node->ram_pct, 100) }}%; height: 100%; {{ $node->bar_style }} border-radius: 999px;"></div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-muted text-xs text-center py-3">Belum ada data node terdaftar.</p>
+                        @endforelse
+                    </div>
                 </div>
             </div>
 
             <!-- AI Insights -->
             <div class="card ai-card col-span-2">
-                <div class="card-header ai-header">
+                <div class="card-header ai-header flex-between" style="display: flex; justify-content: space-between; align-items: center;">
                     <h3 class="card-title"><i class="ph-fill ph-sparkle"></i> Analisis AI Agent</h3>
+                    <button class="btn btn-xs btn-primary" id="refreshAiInsightsBtn" title="Kirim snapshot database ke OpenClaw untuk dianalisis" style="font-size: 0.75rem; padding: 0.3rem 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <i class="ph ph-sparkle" id="refreshAiInsightsIcon"></i>
+                        <span id="aiAnalysisStatusText">Analisis AI Sekarang</span>
+                    </button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table dense-table">
                             <thead>
                                 <tr>
-                                    <th>Tingkat</th>
-                                    <th>Insight Inventaris</th>
-                                    <th class="text-right">Tindakan</th>
+                                    <th style="width: 140px;">Tingkat</th>
+                                    <th>Insight & Rekomendasi Inventaris</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td><span class="badge bg-warning-light text-warning"><i class="ph ph-warning"></i>
-                                            Rekomendasi</span></td>
-                                    <td><strong>Alokasi Node "pve-02" Penuh</strong><br><span
-                                            class="text-muted text-xs">Kapasitas tercatat >90%. Pertimbangkan
-                                            pemerataan data ke pve-03.</span></td>
-                                    <td class="text-right"><button class="btn btn-sm btn-outline-warning"
-                                            onclick="showToast('Membuat draf laporan...', 'warning')">Buat
-                                            Laporan</button></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="badge bg-info-light text-info"><i class="ph ph-info"></i>
-                                            Info</span></td>
-                                    <td><strong>Audit VM Tidak Aktif</strong><br><span class="text-muted text-xs">3 VM
-                                            milik
-                                            Bidang E-Gov tercatat tidak
-                                            aktif >30 hari.</span></td>
-                                    <td class="text-right"><button class="btn btn-sm btn-outline"
-                                            onclick="showToast('Menampilkan detail VM.', 'info')">Detail
-                                            Data</button></td>
-                                </tr>
+                            <tbody id="aiInsightsTableBody">
+                                @forelse ($aiInsights ?? [] as $insight)
+                                    @php
+                                        $level = $insight['level'] ?? 'info';
+                                        $badgeClass = match($level) {
+                                            'danger' => 'bg-danger-light text-danger',
+                                            'warning' => 'bg-warning-light text-warning',
+                                            'success' => 'bg-success-light text-success',
+                                            default => 'bg-info-light text-info',
+                                        };
+                                        $icon = match($level) {
+                                            'danger' => 'ph-warning-octagon',
+                                            'warning' => 'ph-warning',
+                                            'success' => 'ph-check-circle',
+                                            default => 'ph-info',
+                                        };
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <span class="badge {{ $badgeClass }}">
+                                                <i class="ph {{ $icon }}"></i> {{ $insight['badge'] ?? ucfirst($level) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ $insight['title'] }}</strong><br>
+                                            <span class="text-muted text-xs">{{ $insight['description'] }}</span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted py-3">
+                                            Belum ada insight aktif. Klik tombol <strong>Analisis AI Sekarang</strong> di atas.
+                                        </td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -172,104 +202,40 @@
                                     <th>Alokasi CPU</th>
                                     <th>Alokasi RAM</th>
                                     <th>IP Address</th>
-                                    <th class="text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><input type="checkbox" class="checkbox"></td>
-                                    <td><strong>101</strong></td>
-                                    <td>Web Server Utama</td>
-                                    <td><span class="badge bg-purple-light text-purple">E-Gov</span></td>
-                                    <td><span class="status-badge success"><span class="dot"></span>Aktif</span>
-                                    </td>
-                                    <td>pve-01</td>
-                                    <td>4 Cores</td>
-                                    <td>4.2 GB</td>
-                                    <td>192.168.1.101</td>
-                                    <td class="text-right">
-                                        <button class="icon-btn-sm text-primary" title="Detail Data"><i
-                                                class="ph ph-info"></i></button>
-                                        <button class="icon-btn-sm text-warning" title="Edit Data"><i
-                                                class="ph ph-pencil-simple"></i></button>
-                                        <button class="icon-btn-sm text-danger" title="Hapus Data"><i
-                                                class="ph ph-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><input type="checkbox" class="checkbox"></td>
-                                    <td><strong>105</strong></td>
-                                    <td>Database Statistik</td>
-                                    <td><span class="badge bg-orange-light text-orange">Statistik</span></td>
-                                    <td><span class="status-badge success"><span class="dot"></span>Aktif</span>
-                                    </td>
-                                    <td>pve-02</td>
-                                    <td>8 Cores</td>
-                                    <td>14.5 GB</td>
-                                    <td>192.168.1.105</td>
-                                    <td class="text-right">
-                                        <button class="icon-btn-sm text-primary" title="Detail Data"><i
-                                                class="ph ph-info"></i></button>
-                                        <button class="icon-btn-sm text-warning" title="Edit Data"><i
-                                                class="ph ph-pencil-simple"></i></button>
-                                        <button class="icon-btn-sm text-danger" title="Hapus Data"><i
-                                                class="ph ph-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><input type="checkbox" class="checkbox"></td>
-                                    <td><strong>112</strong></td>
-                                    <td>Server Aplikasi SIKD</td>
-                                    <td><span class="badge bg-purple-light text-purple">E-Gov</span></td>
-                                    <td><span class="status-badge success"><span class="dot"></span>Aktif</span>
-                                    </td>
-                                    <td>pve-03</td>
-                                    <td>4 Cores</td>
-                                    <td>8.0 GB</td>
-                                    <td>192.168.1.112</td>
-                                    <td class="text-right">
-                                        <button class="icon-btn-sm text-primary" title="Detail Data"><i
-                                                class="ph ph-info"></i></button>
-                                        <button class="icon-btn-sm text-warning" title="Edit Data"><i
-                                                class="ph ph-pencil-simple"></i></button>
-                                        <button class="icon-btn-sm text-danger" title="Hapus Data"><i
-                                                class="ph ph-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr class="row-disabled">
-                                    <td><input type="checkbox" class="checkbox"></td>
-                                    <td><strong>201</strong></td>
-                                    <td>Backup Server BKD</td>
-                                    <td><span class="badge bg-orange-light text-orange">Kepegawaian</span></td>
-                                    <td><span class="status-badge danger"><span class="dot"></span>Nonaktif</span>
-                                    </td>
-                                    <td>pve-01</td>
-                                    <td>2 Cores</td>
-                                    <td>4.0 GB</td>
-                                    <td>-</td>
-                                    <td class="text-right">
-                                        <button class="icon-btn-sm text-primary" title="Detail Data"><i
-                                                class="ph ph-info"></i></button>
-                                        <button class="icon-btn-sm text-warning" title="Edit Data"><i
-                                                class="ph ph-pencil-simple"></i></button>
-                                        <button class="icon-btn-sm text-danger" title="Hapus Data"><i
-                                                class="ph ph-trash"></i></button>
-                                    </td>
-                                </tr>
+                                @forelse ($vms ?? [] as $vm)
+                                    <tr class="{{ $vm->status === 'Running' ? '' : 'row-disabled' }}">
+                                        <td><input type="checkbox" class="checkbox"></td>
+                                        <td><strong>{{ $vm->id }}</strong></td>
+                                        <td>{{ $vm->hostname }}</td>
+                                        <td><span class="badge bg-purple-light text-purple">{{ $vm->fungsi_layanan }}</span></td>
+                                        <td>
+                                            @if ($vm->status === 'Running')
+                                                <span class="status-badge success"><span class="dot"></span>Aktif</span>
+                                            @else
+                                                <span class="status-badge danger"><span class="dot"></span>Nonaktif</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $vm->serverFisik->nama_server ?? '-' }}</td>
+                                        <td>{{ $vm->allocated_cpu }} Cores</td>
+                                        <td>{{ $vm->allocated_ram_gb }} GB</td>
+                                        <td>{{ $vm->ip_public_private ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted py-3">Belum ada data VM / Kontainer.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer">
-                    <div class="pagination-info">Menampilkan 1-4 dari 69 data aset</div>
+                <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="pagination-info">Menampilkan {{ isset($vms) && $vms->count() ? $vms->firstItem() . '-' . $vms->lastItem() . ' dari ' . $vms->total() : '0' }} data aset</div>
                     <div class="pagination">
-                        <button class="page-btn disabled"><i class="ph ph-caret-left"></i></button>
-                        <button class="page-btn active">1</button>
-                        <button class="page-btn">2</button>
-                        <button class="page-btn">3</button>
-                        <span class="page-dots">...</span>
-                        <button class="page-btn">8</button>
-                        <button class="page-btn"><i class="ph ph-caret-right"></i></button>
+                        <a href="{{ route('vps.index') }}" class="btn btn-sm btn-outline">Lihat Semua di Buku Inventaris &rarr;</a>
                     </div>
                 </div>
             </div>
