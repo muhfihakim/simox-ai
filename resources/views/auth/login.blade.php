@@ -9,6 +9,9 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    @if (config('services.turnstile.enabled', env('TURNSTILE_ENABLED', true)))
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @endif
     <style>
         :root {
             --primary: #4f46e5;
@@ -129,8 +132,9 @@
             display: flex;
             width: 1000px;
             max-width: 95vw;
-            height: 600px;
-            max-height: 90vh;
+            min-height: 620px;
+            height: auto;
+            max-height: 94vh;
             border-radius: 24px;
             background: var(--glass-bg);
             backdrop-filter: blur(24px);
@@ -156,19 +160,20 @@
         /* Left Side: Form */
         .login-form-side {
             flex: 1;
-            padding: 3rem;
+            padding: 2.5rem 3rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
             border-right: 1px solid var(--glass-border);
+            overflow-y: auto;
         }
 
         .brand-logo {
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-size: 1.5rem;
             font-weight: 800;
             background: linear-gradient(to right, #60a5fa, #a78bfa);
@@ -192,7 +197,17 @@
         .header-text p {
             color: #94a3b8;
             font-size: 0.9rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .turnstile-wrapper {
+            margin: 1rem 0 1.25rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 65px;
+            width: 100%;
         }
 
         .form-group {
@@ -745,6 +760,19 @@
                     </label>
                     <a href="#" class="forgot-pass">Recover access</a>
                 </div>
+
+                @if (config('services.turnstile.enabled', env('TURNSTILE_ENABLED', true)))
+                    <div class="turnstile-wrapper">
+                        <div class="cf-turnstile" 
+                             data-sitekey="{{ config('services.turnstile.site_key', env('TURNSTILE_SITE_KEY', '1x00000000000000000000AA')) }}" 
+                             data-theme="dark"></div>
+                        @error('turnstile')
+                            <span style="color: #ef4444; font-size: 0.8rem; margin-top: 0.5rem; text-align: center;">
+                                {{ $message }}
+                            </span>
+                        @enderror
+                    </div>
+                @endif
 
                 <button type="submit" class="btn-submit">
                     Authenticate Session <i class="ph-bold ph-arrow-right"></i>
