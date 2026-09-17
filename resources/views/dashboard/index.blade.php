@@ -103,19 +103,19 @@
 
             <!-- AI Insights -->
             <div class="card ai-card col-span-2">
-                <div class="card-header ai-header flex-between" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card-header ai-header">
                     <h3 class="card-title"><i class="ph-fill ph-sparkle"></i> Analisis AI Agent</h3>
-                    <button class="btn btn-xs btn-primary" id="refreshAiInsightsBtn" title="Kirim snapshot database ke OpenClaw untuk dianalisis" style="font-size: 0.75rem; padding: 0.3rem 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <button class="btn btn-xs btn-primary" id="refreshAiInsightsBtn" title="Kirim snapshot database ke OpenClaw untuk dianalisis">
                         <i class="ph ph-sparkle" id="refreshAiInsightsIcon"></i>
                         <span id="aiAnalysisStatusText">Analisis AI Sekarang</span>
                     </button>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
+                <div class="card-body p-0 ai-card-body">
+                    <div class="table-responsive ai-table-responsive">
                         <table class="table dense-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 140px;">Tingkat</th>
+                                    <th class="col-tingkat">Tingkat</th>
                                     <th>Insight & Rekomendasi Inventaris</th>
                                 </tr>
                             </thead>
@@ -142,7 +142,7 @@
                                                 <i class="ph {{ $icon }}"></i> {{ $insight['badge'] ?? ucfirst($level) }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <td class="insight-content-cell">
                                             <strong>{{ $insight['title'] }}</strong><br>
                                             <span class="text-muted text-xs">{{ $insight['description'] }}</span>
                                         </td>

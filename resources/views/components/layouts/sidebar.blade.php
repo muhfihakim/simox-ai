@@ -17,19 +17,15 @@
                 Node</span></a>
         <a href="{{ route('vps.index') }}" class="nav-item {{ request()->routeIs('vps.*') ? 'active' : '' }}"><i
                 class="ph ph-desktop"></i> <span>Data VPS</span></a>
-
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}"><i
                 class="ph ph-chart-pie-slice"></i> <span>Laporan
                 Pemakaian</span></a>
-
         <span class="nav-label mt-4">INTEGRASI</span>
         <a href="{{ route('ai.index') }}" class="nav-item ai-item {{ request()->routeIs('ai.*') ? 'active' : '' }}"><i
                 class="ph ph-robot"></i> <span>AI Agent</span></a>
-
         <span class="nav-label mt-4">SISTEM</span>
         <a href="{{ route('users.index') }}" class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}"><i
                 class="ph ph-users"></i> <span>Pengguna Admin</span></a>
-        {{-- <a href="#" class="nav-item"><i class="ph ph-gear"></i> <span>Pengaturan</span></a> --}}
     </nav>
 
     <div class="sidebar-footer">

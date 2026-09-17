@@ -315,9 +315,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const aiChatSendBtn = document.getElementById("aiChatSendBtn");
 
     if (aiChatSendBtn && aiChatInput && aiChatBody) {
+        let isWidgetThinking = false;
+
         const sendMessage = async () => {
+            if (isWidgetThinking) return;
+
             const message = aiChatInput.value.trim();
             if (!message) return;
+
+            isWidgetThinking = true;
+            aiChatSendBtn.disabled = true;
+            aiChatInput.disabled = true;
+            const widgetIcon = aiChatSendBtn.querySelector("i");
+            if (widgetIcon) {
+                widgetIcon.className = "ph ph-spinner ph-spin";
+            }
 
             // Trigger button animation & input flash
             aiChatSendBtn.classList.add("btn-sending");
@@ -388,13 +400,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 contentEl.innerHTML = `<span style="color: var(--danger);">Maaf, terjadi kesalahan komunikasi dengan server.</span>`;
             } finally {
                 clearInterval(timerInterval);
+                isWidgetThinking = false;
+                aiChatSendBtn.disabled = false;
+                if (widgetIcon) {
+                    widgetIcon.className = "ph-fill ph-paper-plane-right";
+                }
+                aiChatInput.disabled = false;
+                aiChatInput.focus();
             }
             aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
         };
 
         aiChatSendBtn.addEventListener("click", sendMessage);
         aiChatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !isWidgetThinking) {
                 sendMessage();
             }
         });
@@ -408,9 +427,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const promptChips = document.querySelectorAll(".prompt-chip");
 
     if (fullpageChatBody && fullpageChatInput && fullpageSendBtn) {
+        let isFullpageThinking = false;
+
         const sendFullpageMessage = async (customMessage = null) => {
+            if (isFullpageThinking) return;
+
             const message = (customMessage || fullpageChatInput.value).trim();
             if (!message) return;
+
+            isFullpageThinking = true;
+            fullpageSendBtn.disabled = true;
+            fullpageChatInput.disabled = true;
+            promptChips.forEach((chip) => chip.classList.add("disabled"));
+
+            const sendBtnSpan = fullpageSendBtn.querySelector("span");
+            const sendBtnIcon = fullpageSendBtn.querySelector("i");
+            if (sendBtnSpan) sendBtnSpan.textContent = "Berpikir...";
+            if (sendBtnIcon) sendBtnIcon.className = "ph ph-spinner ph-spin";
 
             // Trigger button animation & input wrapper flash
             const inputWrapper = document.querySelector(".ai-input-wrapper");
@@ -487,26 +520,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 contentEl.innerHTML = `<span style="color: var(--danger);"><i class="ph ph-warning-circle"></i> Gagal berkomunikasi dengan gateway AI.</span>`;
             } finally {
                 clearInterval(timerInterval);
+                isFullpageThinking = false;
+                fullpageSendBtn.disabled = false;
+                if (sendBtnSpan) sendBtnSpan.textContent = "Kirim";
+                if (sendBtnIcon) sendBtnIcon.className = "ph-fill ph-paper-plane-right";
+                promptChips.forEach((chip) => chip.classList.remove("disabled"));
+                fullpageChatInput.disabled = false;
+                fullpageChatInput.focus();
             }
 
             fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
         };
 
-        fullpageSendBtn.addEventListener("click", () => sendFullpageMessage());
+        fullpageSendBtn.addEventListener("click", () => {
+            if (!isFullpageThinking) {
+                sendFullpageMessage();
+            }
+        });
 
         fullpageChatInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                sendFullpageMessage();
+                if (!isFullpageThinking) {
+                    sendFullpageMessage();
+                }
             }
         });
 
         // Prompt Chips Click
         promptChips.forEach((chip) => {
             chip.addEventListener("click", () => {
-                const prompt = chip.getAttribute("data-prompt");
-                if (prompt) {
-                    sendFullpageMessage(prompt);
+                if (!isFullpageThinking) {
+                    const prompt = chip.getAttribute("data-prompt");
+                    if (prompt) {
+                        sendFullpageMessage(prompt);
+                    }
                 }
             });
         });
@@ -775,12 +823,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             tr.innerHTML = `
                                 <td>
                                     <span class="badge ${badgeClass}">
-                                        <i class="ph ${icon}"></i> ${insight.badge || level}
+                                        <i class="ph ${icon}"></i> ${escapeHtml(insight.badge || level)}
                                     </span>
                                 </td>
-                                <td>
-                                    <strong>${insight.title}</strong><br>
-                                    <span class="text-muted text-xs">${insight.description}</span>
+                                <td class="insight-content-cell">
+                                    <strong>${escapeHtml(insight.title)}</strong><br>
+                                    <span class="text-muted text-xs">${escapeHtml(insight.description)}</span>
                                 </td>
                             `;
                             aiInsightsTableBody.appendChild(tr);

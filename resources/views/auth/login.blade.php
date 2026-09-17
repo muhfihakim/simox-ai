@@ -359,10 +359,61 @@
             left: 150%;
         }
 
+        .btn-submit:active {
+            transform: scale(0.97) translateY(0);
+            box-shadow: 0 5px 15px -3px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-submit.loading {
+            opacity: 0.9;
+            pointer-events: none;
+            background: linear-gradient(135deg, #4338ca, #7c3aed);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.65);
+            animation: pulseSubmit 1.2s infinite alternate;
+        }
+
+        @keyframes pulseSubmit {
+            0% {
+                box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 25px rgba(99, 102, 241, 0.85);
+            }
+        }
+
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.45);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
         .alert-box {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
             color: #fca5a5;
+            padding: 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-box-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
             padding: 0.8rem;
             border-radius: 8px;
             font-size: 0.85rem;
@@ -725,6 +776,13 @@
                 <p>Securely access the Proxmox Infrastructure Dashboard</p>
             </div>
 
+            @if (session('status'))
+                <div class="alert-box-success">
+                    <i class="ph-fill ph-check-circle"></i>
+                    {{ session('status') }}
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="alert-box">
                     <i class="ph-fill ph-warning-circle"></i>
@@ -758,7 +816,7 @@
                         <input type="checkbox" name="remember" id="remember">
                         Keep session active
                     </label>
-                    <a href="#" class="forgot-pass">Recover access</a>
+                    <a href="{{ route('password.request') }}" class="forgot-pass">Recover access</a>
                 </div>
 
                 @if (config('services.turnstile.enabled', env('TURNSTILE_ENABLED', true)))
@@ -775,7 +833,7 @@
                 @endif
 
                 <button type="submit" class="btn-submit">
-                    Authenticate Session <i class="ph-bold ph-arrow-right"></i>
+                    <span>Authenticate Session</span> <i class="ph-bold ph-arrow-right"></i>
                 </button>
             </form>
         </div>
@@ -841,6 +899,34 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-submit');
+
+            if (submitBtn) {
+                // Ripple animation on click
+                submitBtn.addEventListener('click', function(e) {
+                    const rect = submitBtn.getBoundingClientRect();
+                    const ripple = document.createElement('span');
+                    ripple.className = 'ripple-effect';
+                    const size = Math.max(rect.width, rect.height);
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+                    ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+                    submitBtn.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            }
+
+            if (loginForm && submitBtn) {
+                loginForm.addEventListener('submit', function() {
+                    submitBtn.classList.add('loading');
+                    submitBtn.innerHTML = '<i class="ph ph-spinner ph-spin" style="font-size: 1.15rem;"></i> <span>Memverifikasi Sesi...</span>';
+                });
+            }
+        });
+    </script>
 </body>
 
 </html>
