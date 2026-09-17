@@ -9,8 +9,8 @@
             <div class="header-actions">
                 <button class="btn btn-outline" onclick="window.print()"><i class="ph ph-printer"></i> Cetak
                     Laporan</button>
-                <button onclick="exportPdfWithCharts()" class="btn btn-primary"><i
-                        class="ph ph-file-pdf"></i> Ekspor PDF</button>
+                <button onclick="exportPdfWithCharts()" class="btn btn-primary"><i class="ph ph-file-pdf"></i> Ekspor
+                    PDF</button>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <!-- RAM Pie Chart -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Distribusi RAM per Bidang (Pie Chart)</h3>
+                    <h3 class="card-title">Distribusi RAM per Bidang</h3>
                 </div>
                 <div class="card-body" style="display: flex; justify-content: center; align-items: center;">
                     <div style="width: 100%; max-width: 350px;">
@@ -105,7 +105,7 @@
             <!-- Storage Bar/Doughnut Chart -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Penggunaan Storage (Doughnut Chart)</h3>
+                    <h3 class="card-title">Penggunaan Storage</h3>
                 </div>
                 <div class="card-body" style="display: flex; justify-content: center; align-items: center;">
                     <div style="width: 100%; max-width: 350px;">
@@ -399,7 +399,9 @@
             showToast('Menyiapkan dokumen PDF formal...', 'info');
 
             // Collect all charts
-            const chartsToExtract = ['cpuNodeBarChart', 'ramNodeBarChart', 'storageNodeBarChart', 'ramPieChart', 'hddDoughnutChart', 'typePieChart'];
+            const chartsToExtract = ['cpuNodeBarChart', 'ramNodeBarChart', 'storageNodeBarChart', 'ramPieChart',
+                'hddDoughnutChart', 'typePieChart'
+            ];
             const chartData = {};
 
             chartsToExtract.forEach(id => {
@@ -412,7 +414,7 @@
             // Create a hidden form
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("reports.export") }}';
+            form.action = '{{ route('reports.export') }}';
 
             // Add CSRF
             const csrfToken = document.createElement('input');
