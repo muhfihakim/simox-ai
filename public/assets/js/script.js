@@ -804,6 +804,233 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // --- Global Navbar Realtime Search ---
+    const searchBar = document.getElementById("navbarSearchBar");
+    const searchInput = document.getElementById("navbarSearchInput");
+    const searchClear = document.getElementById("navbarSearchClear");
+    const searchResults = document.getElementById("navbarSearchResults");
+    const searchResultsBody = document.getElementById("navbarSearchResultsBody");
+    const searchLoading = document.getElementById("navbarSearchLoading");
+    const searchFooter = document.getElementById("navbarSearchFooter");
+
+    let searchDebounceTimer = null;
+    let selectedResultIndex = -1;
+
+    if (searchInput && searchResults && searchResultsBody) {
+        const doSearch = async (query) => {
+            query = query.trim();
+            if (!query) {
+                searchResults.classList.remove("active");
+                searchResultsBody.innerHTML = "";
+                if (searchClear) searchClear.style.display = "none";
+                if (searchFooter) searchFooter.style.display = "none";
+                return;
+            }
+
+            if (searchClear) searchClear.style.display = "flex";
+            if (searchLoading) searchLoading.style.display = "flex";
+            searchResults.classList.add("active");
+            selectedResultIndex = -1;
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+
+                if (searchLoading) searchLoading.style.display = "none";
+
+                const vms = data.vms || [];
+                const nodes = data.nodes || [];
+                const total = data.total || 0;
+
+                if (total === 0) {
+                    searchResultsBody.innerHTML = `
+                        <div class="search-empty-state">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <p>Tidak ada data ditemukan untuk "<strong>${escapeHtml(query)}</strong>"</p>
+                        </div>
+                    `;
+                    if (searchFooter) searchFooter.style.display = "none";
+                    return;
+                }
+
+                let html = "";
+
+                // Virtual Machines / LXC
+                if (vms.length > 0) {
+                    html += `
+                        <div class="search-section">
+                            <div class="search-section-title">
+                                <i class="ph-bold ph-hard-drives"></i> Virtual Machines & LXC (${vms.length})
+                            </div>
+                    `;
+                    vms.forEach((vm) => {
+                        const isRunning = (vm.status || "").toLowerCase() === "running";
+                        const iconClass = vm.tipe === "LXC" ? "lxc" : "vm";
+                        const iconPh = vm.tipe === "LXC" ? "ph-package" : "ph-desktop";
+                        const badgeClass = isRunning ? "search-badge-running" : "search-badge-stopped";
+
+                        html += `
+                            <a href="${vm.url}" class="search-result-item" data-url="${vm.url}">
+                                <div class="search-result-icon ${iconClass}">
+                                    <i class="ph-fill ${iconPh}"></i>
+                                </div>
+                                <div class="search-result-info">
+                                    <div class="search-result-title">
+                                        <span>${escapeHtml(vm.hostname)}</span>
+                                        <span class="search-result-badge ${badgeClass}">${escapeHtml(vm.status)}</span>
+                                        <span class="badge" style="font-size: 0.65rem; padding: 1px 4px; background: rgba(255,255,255,0.06);">${escapeHtml(vm.tipe)}</span>
+                                    </div>
+                                    <div class="search-result-meta">
+                                        <span><i class="ph ph-buildings"></i> ${escapeHtml(vm.dinas)}</span>
+                                        <span>&bull;</span>
+                                        <span><i class="ph ph-server"></i> ${escapeHtml(vm.node)}</span>
+                                        <span>&bull;</span>
+                                        <span><i class="ph ph-globe"></i> ${escapeHtml(vm.ip)}</span>
+                                    </div>
+                                </div>
+                                <i class="ph ph-caret-right text-muted" style="font-size: 0.9rem;"></i>
+                            </a>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                // Server Fisik / Nodes
+                if (nodes.length > 0) {
+                    html += `
+                        <div class="search-section">
+                            <div class="search-section-title">
+                                <i class="ph-bold ph-server"></i> Server Fisik / Nodes (${nodes.length})
+                            </div>
+                    `;
+                    nodes.forEach((node) => {
+                        html += `
+                            <a href="${node.url}" class="search-result-item" data-url="${node.url}">
+                                <div class="search-result-icon node">
+                                    <i class="ph-fill ph-server"></i>
+                                </div>
+                                <div class="search-result-info">
+                                    <div class="search-result-title">
+                                        <span>${escapeHtml(node.nama)}</span>
+                                        <span class="search-result-badge search-badge-node">${escapeHtml(node.status)}</span>
+                                    </div>
+                                    <div class="search-result-meta">
+                                        <span><i class="ph ph-network"></i> IP: ${escapeHtml(node.ip)}</span>
+                                        <span>&bull;</span>
+                                        <span><i class="ph ph-hard-drives"></i> ${node.vm_count} VM/LXC</span>
+                                        <span>&bull;</span>
+                                        <span>PVE ${escapeHtml(node.versi)}</span>
+                                    </div>
+                                </div>
+                                <i class="ph ph-caret-right text-muted" style="font-size: 0.9rem;"></i>
+                            </a>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                searchResultsBody.innerHTML = html;
+                if (searchFooter) searchFooter.style.display = "flex";
+
+            } catch (err) {
+                console.error("Live search error:", err);
+                if (searchLoading) searchLoading.style.display = "none";
+                searchResultsBody.innerHTML = `
+                    <div class="search-empty-state">
+                        <i class="ph ph-warning-circle text-danger"></i>
+                        <p>Gagal memuat hasil pencarian.</p>
+                    </div>
+                `;
+            }
+        };
+
+        searchInput.addEventListener("input", (e) => {
+            clearTimeout(searchDebounceTimer);
+            const val = e.target.value;
+            if (!val.trim()) {
+                searchResults.classList.remove("active");
+                if (searchClear) searchClear.style.display = "none";
+                return;
+            }
+            if (searchClear) searchClear.style.display = "flex";
+            searchDebounceTimer = setTimeout(() => {
+                doSearch(val);
+            }, 180);
+        });
+
+        searchInput.addEventListener("focus", () => {
+            if (searchInput.value.trim().length > 0) {
+                searchResults.classList.add("active");
+            }
+        });
+
+        // Keyboard navigation (Arrow up/down, Enter, Escape)
+        searchInput.addEventListener("keydown", (e) => {
+            const items = searchResultsBody.querySelectorAll(".search-result-item");
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                if (items.length === 0) return;
+                selectedResultIndex = (selectedResultIndex + 1) % items.length;
+                updateSelectedResult(items);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                if (items.length === 0) return;
+                selectedResultIndex = (selectedResultIndex - 1 + items.length) % items.length;
+                updateSelectedResult(items);
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (selectedResultIndex >= 0 && items[selectedResultIndex]) {
+                    window.location.href = items[selectedResultIndex].getAttribute("data-url");
+                } else if (items.length > 0) {
+                    window.location.href = items[0].getAttribute("data-url");
+                } else if (searchInput.value.trim()) {
+                    window.location.href = `/vps?search=${encodeURIComponent(searchInput.value.trim())}`;
+                }
+            } else if (e.key === "Escape") {
+                searchResults.classList.remove("active");
+                searchInput.blur();
+            }
+        });
+
+        function updateSelectedResult(items) {
+            items.forEach((item, idx) => {
+                if (idx === selectedResultIndex) {
+                    item.classList.add("selected");
+                    item.scrollIntoView({ block: "nearest" });
+                } else {
+                    item.classList.remove("selected");
+                }
+            });
+        }
+
+        if (searchClear) {
+            searchClear.addEventListener("click", () => {
+                searchInput.value = "";
+                searchClear.style.display = "none";
+                searchResults.classList.remove("active");
+                searchResultsBody.innerHTML = "";
+                searchInput.focus();
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+            if (searchBar && !searchBar.contains(e.target)) {
+                searchResults.classList.remove("active");
+            }
+        });
+    }
+
+    // Auto-filter on page load if ?search= is in query string
+    const globalUrlSearch = new URLSearchParams(window.location.search).get("search");
+    if (globalUrlSearch) {
+        const pageSearchInput = document.getElementById("searchInput");
+        if (pageSearchInput && typeof filterItems === "function") {
+            pageSearchInput.value = globalUrlSearch;
+            filterItems();
+        }
+    }
 });
 
 // --- Toast Notification System ---

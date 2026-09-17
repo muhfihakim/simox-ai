@@ -126,10 +126,232 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; color: var(--text-main); }
 .topbar { height: var(--header-height); background-color: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1rem; position: sticky; top: 0; z-index: 90; }
 .topbar-left { display: flex; align-items: center; gap: 0.5rem; }
 .menu-btn { display: flex; }
-.search-bar { display: flex; align-items: center; background-color: var(--background); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.75rem; width: 300px; transition: all 0.2s; }
-.search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-.search-bar i { color: var(--text-muted); margin-right: 0.4rem; font-size: 1rem; }
-.search-bar input { border: none; background: transparent; outline: none; width: 100%; font-size: 0.85rem; color: var(--text-main); }
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.75rem;
+    width: 320px;
+    transition: all 0.25s ease;
+}
+.search-bar:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+    width: 380px;
+}
+.search-bar .search-icon {
+    color: var(--text-muted);
+    margin-right: 0.4rem;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.search-bar input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+.search-clear-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+    margin-left: 0.25rem;
+    flex-shrink: 0;
+}
+.search-clear-btn:hover {
+    color: var(--danger, #ef4444);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Floating Realtime Search Dropdown */
+.search-dropdown-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 440px;
+    max-width: 90vw;
+    max-height: 480px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+    z-index: 1050;
+    display: none;
+    animation: searchDropdownFade 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.search-dropdown-results.active {
+    display: block;
+}
+@keyframes searchDropdownFade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.search-results-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1.5rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+.search-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+.search-section {
+    padding: 0.4rem 0;
+}
+.search-section + .search-section {
+    border-top: 1px solid var(--border);
+}
+.search-section-title {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.85rem;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+}
+.search-result-item:hover,
+.search-result-item.selected {
+    background-color: var(--background);
+    outline: none;
+}
+.search-result-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.search-result-icon.vm {
+    background: rgba(14, 165, 233, 0.12);
+    color: #0ea5e9;
+}
+.search-result-icon.lxc {
+    background: rgba(168, 85, 247, 0.12);
+    color: #a855f7;
+}
+.search-result-icon.node {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+}
+.search-result-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+.search-result-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.search-result-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.search-result-badge {
+    font-size: 0.68rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+.search-badge-running { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.search-badge-stopped { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.search-badge-node { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+
+.search-empty-state {
+    text-align: center;
+    padding: 1.75rem 1rem;
+    color: var(--text-muted);
+}
+.search-empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.4rem;
+    opacity: 0.5;
+    display: block;
+}
+.search-empty-state p {
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.search-dropdown-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.85rem;
+    background: var(--background);
+    border-top: 1px solid var(--border);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+.search-dropdown-footer kbd {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.1rem 0.3rem;
+    font-size: 0.68rem;
+    font-family: inherit;
+}
+
+@media (max-width: 768px) {
+    .search-bar:focus-within { width: 220px; }
+    .search-dropdown-results {
+        position: fixed;
+        top: 60px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
+    }
+}
 
 .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
 .icon-btn { background: none; border: none; font-size: 1.1rem; color: var(--text-muted); cursor: pointer; width: 32px; height: 32px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: background 0.2s; }

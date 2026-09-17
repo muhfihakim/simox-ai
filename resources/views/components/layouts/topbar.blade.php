@@ -11,10 +11,24 @@
          <button class="icon-btn menu-btn" id="toggleSidebar">
              <i class="ph ph-list"></i>
          </button>
-         <div class="search-bar">
-             <i class="ph ph-magnifying-glass"></i>
-             <input type="text" placeholder="Cari Data VM, Dinas, atau Node...">
-         </div>
+         <div class="search-bar" id="navbarSearchBar">
+            <i class="ph ph-magnifying-glass search-icon"></i>
+            <input type="text" id="navbarSearchInput" placeholder="Cari Data VM, Dinas, atau Node..." autocomplete="off">
+            <button type="button" class="search-clear-btn" id="navbarSearchClear" style="display: none;" title="Hapus pencarian">
+                <i class="ph ph-x"></i>
+            </button>
+            <div class="search-dropdown-results" id="navbarSearchResults">
+                <div class="search-results-loading" id="navbarSearchLoading" style="display: none;">
+                    <div class="search-spinner"></div>
+                    <span>Mencari data...</span>
+                </div>
+                <div class="search-results-body" id="navbarSearchResultsBody"></div>
+                <div class="search-dropdown-footer" id="navbarSearchFooter" style="display: none;">
+                    <span><i class="ph ph-arrows-down-up"></i> Navigasi <strong>&uarr; &darr;</strong> &bull; <strong>Enter</strong> buka</span>
+                    <span><kbd>ESC</kbd> tutup</span>
+                </div>
+            </div>
+        </div>
      </div>
 
      <div class="topbar-actions">

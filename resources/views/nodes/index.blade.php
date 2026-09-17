@@ -4,7 +4,7 @@
         <div class="page-header">
             <div>
                 <h1>Data Node Server</h1>
-                <p>Inventaris server fisik yang menyusun kluster Diskominfo Subang.</p>
+                <p>Manajemen aset fisik server.</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn-primary" id="customOpenModalBtn"><i class="ph ph-plus"></i> Catat Node Baru</button>
@@ -189,9 +189,9 @@
                         </div>
                     </div>
                     <div class="card-footer flex-between gap-2">
-                        <button class="btn btn-sm btn-outline text-primary flex-grow-1"
-                            style="justify-content: center;" onclick="openDetailModal({{ json_encode($node) }})"><i
-                                class="ph ph-info"></i> Detail Data</button>
+                        <button class="btn btn-sm btn-outline text-primary flex-grow-1" style="justify-content: center;"
+                            onclick="openDetailModal({{ json_encode($node) }})"><i class="ph ph-info"></i> Detail
+                            Data</button>
                         <button class="icon-btn-sm text-warning" title="Edit Data"
                             onclick="openEditModal({{ json_encode($node) }})"><i
                                 class="ph ph-pencil-simple"></i></button>
@@ -558,5 +558,16 @@
         function closeDetailModal() {
             detailModal.classList.remove('active');
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlQuery = new URLSearchParams(window.location.search).get('search');
+            if (urlQuery) {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = urlQuery;
+                    filterItems();
+                }
+            }
+        });
     </script>
 </x-layouts.app>

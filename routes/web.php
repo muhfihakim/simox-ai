@@ -30,6 +30,9 @@ Route::middleware(['auth'])->group(function () {
 
     // AI Agent Full Page & Endpoints
     Route::get('/ai-agent', [AiAgentController::class, 'index'])->name('ai.index');
+
+    // Global Navbar Realtime Search
+    Route::get('/api/search', [\App\Http\Controllers\SearchController::class, 'liveSearch'])->name('api.search');
 });
 
 Route::get('/api/agent/status', [AiAgentController::class, 'status'])->name('api.agent.status');

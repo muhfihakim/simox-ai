@@ -16,7 +16,7 @@
                 class="ph ph-hard-drive"></i> <span>Data
                 Node</span></a>
         <a href="{{ route('vps.index') }}" class="nav-item {{ request()->routeIs('vps.*') ? 'active' : '' }}"><i
-                class="ph ph-desktop"></i> <span>Inventaris VPS</span></a>
+                class="ph ph-desktop"></i> <span>Data VPS</span></a>
 
         <a href="{{ route('reports.index') }}" class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}"><i
                 class="ph ph-chart-pie-slice"></i> <span>Laporan
