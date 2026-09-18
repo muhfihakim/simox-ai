@@ -14,8 +14,9 @@
                     <span class="status-dot"></span>
                     <span id="fullpageAgentStatusText" class="text-xs font-semibold">Memeriksa Gateway...</span>
                 </div>
-                <button class="btn btn-outline" id="fullpageResetBtn" title="Reset riwayat percakapan sesi ini">
-                    <i class="ph ph-arrow-counter-clockwise"></i> Reset Chat
+                <button class="btn btn-outline" id="fullpageCloseBtn" title="Tutup sesi AI Agent dan bersihkan riwayat"
+                    style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4);">
+                    <i class="ph ph-x-circle"></i> Tutup Agent
                 </button>
             </div>
         </div>

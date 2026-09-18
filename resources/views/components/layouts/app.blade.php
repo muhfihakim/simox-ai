@@ -27,7 +27,7 @@
                     <div style="display: flex; align-items: center; gap: 0.25rem;">
                         <a href="{{ route('ai.index') }}" class="icon-btn" title="Buka Halaman Penuh"
                             style="color: white; text-decoration: none;"><i class="ph ph-arrows-out-simple"></i></a>
-                        <button class="icon-btn" id="closeAiChat"><i class="ph ph-x"></i></button>
+                        <button class="icon-btn" id="closeAiChat" title="Tutup & Bersihkan Chat"><i class="ph ph-x"></i></button>
                     </div>
                 </div>
                 <div class="ai-chat-body" id="aiChatBody">

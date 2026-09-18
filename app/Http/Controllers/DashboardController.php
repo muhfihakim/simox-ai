@@ -186,11 +186,15 @@ class DashboardController extends Controller
                 'model' => $model,
                 'messages' => [
                     [
+                        'role' => 'system',
+                        'content' => "Anda adalah AI Auditor Khusus Analisis Infrastruktur SIMOX Proxmox VE. Sesi ini khusus untuk melakukan audit dan rekomendasi inventaris berkala pada dashboard SIMOX. Berikan insight paling esensial dalam format JSON array yang diminta."
+                    ],
+                    [
                         'role' => 'user',
                         'content' => $prompt
                     ]
                 ],
-                'user' => 'simox-dashboard-auditor',
+                'user' => 'simox-dashboard-analysis',
             ]);
 
             if ($response->successful()) {

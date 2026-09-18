@@ -1333,6 +1333,19 @@ h1, h2, h3, h4, h5, h6 { font-weight: 600; color: var(--text-main); }
         justify-content: center;
     }
 }
+/* AI Processing Lock Visual States */
+body.ai-processing a.nav-item,
+body.ai-processing .sidebar-menu a,
+body.ai-processing .app-header a,
+body.ai-processing #closeAiChat,
+body.ai-processing #fullpageCloseBtn,
+body.ai-processing #fullpageResetBtn {
+    cursor: not-allowed !important;
+    opacity: 0.65;
+    transition: opacity 0.2s ease;
+}
 
-
+body.ai-processing a[href]:not(.btn-download-pdf-card):not(.btn-action-pdf) {
+    cursor: not-allowed !important;
+}
 

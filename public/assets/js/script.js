@@ -293,20 +293,219 @@ document.addEventListener("DOMContentLoaded", () => {
         setInterval(checkAgentStatus, 30000);
     }
 
+    // --- AI Thinking State & Navigation Lock ---
+    window.isAiThinking = false;
+    function setAiThinking(thinking) {
+        window.isAiThinking = !!thinking;
+        if (window.isAiThinking) {
+            document.body.classList.add("ai-processing");
+        } else {
+            document.body.classList.remove("ai-processing");
+        }
+    }
+
+    // Prevent closing tab, reloading, or leaving page while AI is thinking
+    window.addEventListener("beforeunload", (e) => {
+        if (window.isAiThinking) {
+            e.preventDefault();
+            e.returnValue = "AI sedang berpikir & memproses data. Apakah Anda yakin ingin keluar?";
+            return e.returnValue;
+        }
+    });
+
+    // Intercept in-app navigation (links, menu items, close/reset buttons) while AI is thinking
+    document.addEventListener(
+        "click",
+        (e) => {
+            if (!window.isAiThinking) return;
+
+            // 1. Check close / reset buttons
+            const closeOrReset = e.target.closest(
+                "#closeAiChat, #fullpageCloseBtn, #fullpageResetBtn",
+            );
+            if (closeOrReset) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                if (typeof showToast === "function") {
+                    showToast(
+                        "AI sedang berpikir & memproses data. Harap tunggu hingga proses selesai.",
+                        "warning",
+                    );
+                }
+                return false;
+            }
+
+            // 2. Check navigation links (sidebar, topbar, cards, etc.)
+            const link = e.target.closest("a[href]");
+            if (link) {
+                if (
+                    link.classList.contains("btn-download-pdf-card") ||
+                    link.classList.contains("btn-action-pdf")
+                ) {
+                    return;
+                }
+
+                const href = link.getAttribute("href");
+                if (
+                    href &&
+                    !href.startsWith("#") &&
+                    !href.startsWith("javascript:")
+                ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    if (typeof showToast === "function") {
+                        showToast(
+                            "AI sedang berpikir & memproses data. Harap tunggu hingga selesai sebelum berpindah menu/halaman.",
+                            "warning",
+                        );
+                    }
+                    return false;
+                }
+            }
+        },
+        true, // capture phase to intercept before native handlers
+    );
+
+    // Intercept form submissions while AI is thinking
+    document.addEventListener(
+        "submit",
+        (e) => {
+            if (window.isAiThinking) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                if (typeof showToast === "function") {
+                    showToast(
+                        "AI sedang berpikir & memproses data. Harap tunggu hingga selesai.",
+                        "warning",
+                    );
+                }
+                return false;
+            }
+        },
+        true,
+    );
+
+    // --- AI Chat History & Storage Management (Global Widget & Fullpage) ---
+    const CHAT_STORAGE_KEY = "simox_ai_chat_history";
+    const WIDGET_OPEN_KEY = "simox_ai_widget_open";
+
+    function getStoredChatHistory() {
+        try {
+            const data = localStorage.getItem(CHAT_STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveChatMessage(sender, text, rawReply = null, duration = null) {
+        try {
+            const history = getStoredChatHistory();
+            history.push({
+                sender,
+                text: text || "",
+                rawReply: rawReply || text || "",
+                duration: duration || null,
+                time: Date.now(),
+            });
+            // Batasi riwayat maksimal 50 pesan terakhir agar penyimpanan efisien
+            if (history.length > 50) {
+                history.splice(0, history.length - 50);
+            }
+            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(history));
+        } catch (e) {
+            console.error("Gagal menyimpan riwayat chat:", e);
+        }
+    }
+
+    function clearChatHistory() {
+        try {
+            localStorage.removeItem(CHAT_STORAGE_KEY);
+        } catch (e) {}
+    }
+
+    function restoreWidgetMessages() {
+        const body = document.getElementById("aiChatBody");
+        if (!body) return;
+
+        body.innerHTML = `
+            <div class="chat-message bot">
+                <div class="msg-content">Halo! Saya Agen OpenClaw yang siap membantu Anda dengan pengelolaan Proxmox VE. Apa yang bisa saya bantu hari ini?</div>
+            </div>
+        `;
+
+        const history = getStoredChatHistory();
+        if (!history || history.length === 0) return;
+
+        history.forEach((msg) => {
+            if (msg.sender === "user") {
+                const userMsgDiv = document.createElement("div");
+                userMsgDiv.className = "chat-message user";
+                userMsgDiv.innerHTML = `<div class="msg-content"></div>`;
+                userMsgDiv.querySelector(".msg-content").textContent = msg.text;
+                body.appendChild(userMsgDiv);
+            } else {
+                const botMsgDiv = document.createElement("div");
+                botMsgDiv.className = "chat-message bot";
+                botMsgDiv.dataset.rawText = msg.rawReply;
+                botMsgDiv.innerHTML = `<div class="msg-content">${formatAiReply(msg.rawReply, msg.duration)}</div>`;
+                body.appendChild(botMsgDiv);
+            }
+        });
+
+        body.scrollTop = body.scrollHeight;
+    }
+
     // --- AI Chat Widget Toggle ---
     const aiChatWidget = document.getElementById("aiChatWidget");
     const openAiChat = document.getElementById("openAiChat");
     const closeAiChat = document.getElementById("closeAiChat");
 
-    if (openAiChat && aiChatWidget) {
-        openAiChat.addEventListener("click", () =>
-            aiChatWidget.classList.add("active"),
-        );
+    if (aiChatWidget) {
+        // Cek jika widget sebelumnya dalam posisi terbuka saat berpindah halaman
+        const isWidgetOpen = localStorage.getItem(WIDGET_OPEN_KEY) === "true";
+        if (isWidgetOpen) {
+            aiChatWidget.classList.add("active");
+        }
+        // Pulihkan riwayat percakapan widget global
+        restoreWidgetMessages();
     }
+
+    if (openAiChat && aiChatWidget) {
+        openAiChat.addEventListener("click", () => {
+            aiChatWidget.classList.add("active");
+            localStorage.setItem(WIDGET_OPEN_KEY, "true");
+            restoreWidgetMessages();
+        });
+    }
+
     if (closeAiChat && aiChatWidget) {
-        closeAiChat.addEventListener("click", () =>
-            aiChatWidget.classList.remove("active"),
-        );
+        closeAiChat.addEventListener("click", async () => {
+            if (window.isAiThinking) {
+                if (typeof showToast === "function") {
+                    showToast("AI sedang berpikir & memproses data. Mohon tunggu hingga selesai.", "warning");
+                }
+                return;
+            }
+
+            aiChatWidget.classList.remove("active");
+            localStorage.setItem(WIDGET_OPEN_KEY, "false");
+
+            clearChatHistory();
+            restoreWidgetMessages();
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+                await fetch("/api/agent/reset", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": csrfToken },
+                    body: JSON.stringify({ session_id: "simox-web-widget-global" })
+                });
+            } catch (e) {}
+        });
     }
 
     // --- AI Chat Widget Logic ---
@@ -317,13 +516,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (aiChatSendBtn && aiChatInput && aiChatBody) {
         let isWidgetThinking = false;
 
-        const sendMessage = async () => {
-            if (isWidgetThinking) return;
+        const sendMessage = async (customMessage = null) => {
+            if (isWidgetThinking || window.isAiThinking) return;
 
-            const message = aiChatInput.value.trim();
+            const message = (customMessage || aiChatInput.value).trim();
             if (!message) return;
 
             isWidgetThinking = true;
+            setAiThinking(true);
             aiChatSendBtn.disabled = true;
             aiChatInput.disabled = true;
             const widgetIcon = aiChatSendBtn.querySelector("i");
@@ -347,6 +547,10 @@ document.addEventListener("DOMContentLoaded", () => {
             aiChatBody.appendChild(userMsgDiv);
             aiChatInput.value = "";
             aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
+
+            // Simpan pesan pengguna ke history widget global & pastikan state widget open tersimpan
+            saveChatMessage("user", message, null, null);
+            localStorage.setItem(WIDGET_OPEN_KEY, "true");
 
             // Add loading indicator with live timer
             const botMsgDiv = document.createElement("div");
@@ -382,7 +586,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         "X-CSRF-TOKEN": csrfToken,
                         Accept: "application/json",
                     },
-                    body: JSON.stringify({ message }),
+                    body: JSON.stringify({
+                        message,
+                        session_id: "simox-web-widget-global",
+                    }),
                 });
 
                 const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -393,6 +600,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = formatAiReply(rawReply, durationSec);
+
+                // Simpan respons bot ke history widget global
+                saveChatMessage("bot", null, rawReply, durationSec);
             } catch (error) {
                 const contentEl = botMsgDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
@@ -401,6 +611,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } finally {
                 clearInterval(timerInterval);
                 isWidgetThinking = false;
+                setAiThinking(false);
                 aiChatSendBtn.disabled = false;
                 if (widgetIcon) {
                     widgetIcon.className = "ph-fill ph-paper-plane-right";
@@ -411,9 +622,15 @@ document.addEventListener("DOMContentLoaded", () => {
             aiChatBody.scrollTo({ top: aiChatBody.scrollHeight, behavior: "smooth" });
         };
 
-        aiChatSendBtn.addEventListener("click", sendMessage);
+        window.sendAiWidgetPrompt = (promptText) => {
+            if (!isWidgetThinking && !window.isAiThinking) {
+                sendMessage(promptText);
+            }
+        };
+
+        aiChatSendBtn.addEventListener("click", () => sendMessage());
         aiChatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter" && !isWidgetThinking) {
+            if (e.key === "Enter" && !isWidgetThinking && !window.isAiThinking) {
                 sendMessage();
             }
         });
@@ -429,13 +646,54 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fullpageChatBody && fullpageChatInput && fullpageSendBtn) {
         let isFullpageThinking = false;
 
+        function restoreFullpageMessages() {
+            const body = document.getElementById("fullpageChatBody");
+            if (!body) return;
+            const history = getStoredChatHistory();
+            if (!history || history.length === 0) return;
+
+            // Hapus pesan dinamis sebelumnya setelah pesan bot awal
+            const messages = body.querySelectorAll(".chat-message");
+            messages.forEach((msg, idx) => {
+                if (idx > 0) msg.remove();
+            });
+
+            history.forEach((msg) => {
+                if (msg.sender === "user") {
+                    const userDiv = document.createElement("div");
+                    userDiv.className = "chat-message user";
+                    userDiv.innerHTML = `
+                        <div class="chat-avatar user-avatar"><i class="ph-fill ph-user"></i></div>
+                        <div class="msg-content"></div>
+                    `;
+                    userDiv.querySelector(".msg-content").textContent = msg.text;
+                    body.appendChild(userDiv);
+                } else {
+                    const botDiv = document.createElement("div");
+                    botDiv.className = "chat-message bot";
+                    botDiv.dataset.rawText = msg.rawReply;
+                    botDiv.innerHTML = `
+                        <div class="chat-avatar bot-avatar"><i class="ph-fill ph-robot"></i></div>
+                        <div class="msg-content">${formatAiReply(msg.rawReply, msg.duration)}</div>
+                    `;
+                    body.appendChild(botDiv);
+                }
+            });
+
+            body.scrollTop = body.scrollHeight;
+        }
+
+        // Pulihkan percakapan di halaman penuh saat dimuat
+        restoreFullpageMessages();
+
         const sendFullpageMessage = async (customMessage = null) => {
-            if (isFullpageThinking) return;
+            if (isFullpageThinking || window.isAiThinking) return;
 
             const message = (customMessage || fullpageChatInput.value).trim();
             if (!message) return;
 
             isFullpageThinking = true;
+            setAiThinking(true);
             fullpageSendBtn.disabled = true;
             fullpageChatInput.disabled = true;
             promptChips.forEach((chip) => chip.classList.add("disabled"));
@@ -466,6 +724,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             fullpageChatInput.value = "";
             fullpageChatBody.scrollTo({ top: fullpageChatBody.scrollHeight, behavior: "smooth" });
+
+            // Simpan pesan user ke history global
+            saveChatMessage("user", message);
+            localStorage.setItem(WIDGET_OPEN_KEY, "true");
 
             // Bot message thinking bubble with live timer
             const botDiv = document.createElement("div");
@@ -502,7 +764,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         "X-CSRF-TOKEN": csrfToken,
                         Accept: "application/json",
                     },
-                    body: JSON.stringify({ message }),
+                    body: JSON.stringify({
+                        message,
+                        session_id: "simox-web-widget-global",
+                    }),
                 });
 
                 const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -513,6 +778,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 contentEl.classList.remove("typing-indicator-content");
                 contentEl.classList.add("msg-reply-animated");
                 contentEl.innerHTML = formatAiReply(rawReply, durationSec);
+
+                // Simpan respons bot ke history global
+                saveChatMessage("bot", null, rawReply, durationSec);
             } catch (error) {
                 const contentEl = botDiv.querySelector(".msg-content");
                 contentEl.classList.remove("typing-indicator-content");
@@ -521,6 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } finally {
                 clearInterval(timerInterval);
                 isFullpageThinking = false;
+                setAiThinking(false);
                 fullpageSendBtn.disabled = false;
                 if (sendBtnSpan) sendBtnSpan.textContent = "Kirim";
                 if (sendBtnIcon) sendBtnIcon.className = "ph-fill ph-paper-plane-right";
@@ -533,7 +802,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         fullpageSendBtn.addEventListener("click", () => {
-            if (!isFullpageThinking) {
+            if (!isFullpageThinking && !window.isAiThinking) {
                 sendFullpageMessage();
             }
         });
@@ -541,7 +810,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fullpageChatInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                if (!isFullpageThinking) {
+                if (!isFullpageThinking && !window.isAiThinking) {
                     sendFullpageMessage();
                 }
             }
@@ -550,7 +819,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Prompt Chips Click
         promptChips.forEach((chip) => {
             chip.addEventListener("click", () => {
-                if (!isFullpageThinking) {
+                if (!isFullpageThinking && !window.isAiThinking) {
                     const prompt = chip.getAttribute("data-prompt");
                     if (prompt) {
                         sendFullpageMessage(prompt);
@@ -562,20 +831,30 @@ document.addEventListener("DOMContentLoaded", () => {
         // Reset Chat Session
         if (fullpageResetBtn) {
             fullpageResetBtn.addEventListener("click", async () => {
+                if (window.isAiThinking) {
+                    if (typeof showToast === "function") {
+                        showToast("AI sedang berpikir & memproses data. Harap tunggu hingga selesai.", "warning");
+                    }
+                    return;
+                }
                 if (!confirm("Reset riwayat percakapan sesi ini?")) return;
                 try {
                     const csrfToken = document
                         .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content");
+                        ?.getAttribute("content");
                     await fetch("/api/agent/reset", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
                             "X-CSRF-TOKEN": csrfToken,
                         },
+                        body: JSON.stringify({ session_id: "simox-web-widget-global" }),
                     });
+                    clearChatHistory();
+                    localStorage.setItem(WIDGET_OPEN_KEY, "false");
                     showToast("Sesi percakapan berhasil direset.", "success");
-                    // Remove message bubbles except the first bot welcome
+                    
+                    // Hapus pesan dinamis kecuali pesan bot awal
                     const messages =
                         fullpageChatBody.querySelectorAll(".chat-message");
                     messages.forEach((msg, idx) => {
@@ -584,6 +863,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 } catch (e) {
                     showToast("Gagal mereset sesi percakapan.", "error");
                 }
+            });
+        }
+
+        // Tutup Agent Button
+        const fullpageCloseBtn = document.getElementById("fullpageCloseBtn");
+        if (fullpageCloseBtn) {
+            fullpageCloseBtn.addEventListener("click", async () => {
+                if (window.isAiThinking) {
+                    if (typeof showToast === "function") {
+                        showToast("AI sedang berpikir & memproses data. Harap tunggu hingga selesai.", "warning");
+                    }
+                    return;
+                }
+                if (!confirm("Tutup sesi AI Agent dan bersihkan riwayat percakapan?")) return;
+                try {
+                    const csrfToken = document
+                        .querySelector('meta[name="csrf-token"]')
+                        ?.getAttribute("content");
+                    await fetch("/api/agent/reset", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": csrfToken,
+                        },
+                        body: JSON.stringify({ session_id: "simox-web-widget-global" }),
+                    });
+                } catch (e) {}
+                clearChatHistory();
+                localStorage.setItem(WIDGET_OPEN_KEY, "false");
+                window.location.href = "/dashboard";
             });
         }
 
@@ -1028,6 +1337,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 updateSelectedResult(items);
             } else if (e.key === "Enter") {
                 e.preventDefault();
+                if (window.isAiThinking) {
+                    if (typeof showToast === "function") {
+                        showToast("AI sedang berpikir & memproses data. Harap tunggu hingga selesai sebelum berpindah halaman.", "warning");
+                    }
+                    return;
+                }
                 if (selectedResultIndex >= 0 && items[selectedResultIndex]) {
                     window.location.href = items[selectedResultIndex].getAttribute("data-url");
                 } else if (items.length > 0) {
