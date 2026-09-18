@@ -48,4 +48,13 @@ return [
         'secret_key' => env('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA'),
     ],
 
+    'proxmox' => [
+        'host' => env('PROXMOX_HOST', '192.168.1.11'),
+        'port' => env('PROXMOX_PORT', 8006),
+        'token_id' => env('PROXMOX_TOKEN_ID'),
+        'token_secret' => env('PROXMOX_TOKEN_SECRET'),
+        'verify_ssl' => env('PROXMOX_VERIFY_SSL', false),
+        'timeout' => env('PROXMOX_TIMEOUT', 4),
+    ],
+
 ];

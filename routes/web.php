@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/api/dashboard/insights', [DashboardController::class, 'aiInsights'])->name('api.dashboard.insights');
+    Route::get('/api/nodes/{node?}/network-traffic', [DashboardController::class, 'nodeNetworkTraffic'])->name('api.nodes.network-traffic');
     
     Route::resource('nodes', ServerFisikController::class)->names('nodes');
     Route::resource('vps', VirtualMachineController::class)->names('vps');

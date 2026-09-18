@@ -9,8 +9,16 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+use App\Services\ProxmoxService;
+
 class DashboardController extends Controller
 {
+    protected ProxmoxService $proxmoxService;
+
+    public function __construct(ProxmoxService $proxmoxService)
+    {
+        $this->proxmoxService = $proxmoxService;
+    }
     public function index()
     {
         // 1. Statistics
@@ -95,6 +103,24 @@ class DashboardController extends Controller
             'source' => Cache::get('dashboard_ai_insights_source', 'rule_based'),
             'updated_at' => now()->format('H:i:s'),
         ]);
+    }
+
+    /**
+     * Endpoint API untuk telemetri trafik jaringan node Proxmox VE
+     */
+    public function nodeNetworkTraffic(Request $request, $node = null)
+    {
+        $nodeName = $node ?: $request->query('node', 'pve-01');
+        $nodeIp = $request->query('ip');
+
+        if (empty($nodeIp)) {
+            $server = ServerFisik::where('nama_server', $nodeName)->first();
+            $nodeIp = $server?->alamat_ip;
+        }
+
+        $data = $this->proxmoxService->getNodeNetworkTraffic($nodeName, $nodeIp);
+
+        return response()->json($data);
     }
 
     private function getAiInsights($trigger = false)

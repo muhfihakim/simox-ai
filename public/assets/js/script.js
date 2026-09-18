@@ -999,55 +999,73 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- Chart.js Configuration ---
-    const chartCanvas = document.getElementById("resourceChart");
-    if (chartCanvas) {
-        const ctx = chartCanvas.getContext("2d");
-        const gradientCpu = ctx.createLinearGradient(0, 0, 0, 200);
-        gradientCpu.addColorStop(0, "rgba(79, 70, 229, 0.4)");
-        gradientCpu.addColorStop(1, "rgba(79, 70, 229, 0.0)");
+    // --- Real-time Proxmox VE Node Network Traffic Chart ---
+    const nodeNetworkCanvas = document.getElementById("nodeNetworkChart");
+    const nodeNetworkSelect = document.getElementById("nodeNetworkSelect");
+    const networkRxVal = document.getElementById("networkRxVal");
+    const networkTxVal = document.getElementById("networkTxVal");
+    const networkSourceBadge = document.getElementById("networkSourceBadge");
+    const networkSourceText = document.getElementById("networkSourceText");
 
-        const gradientRam = ctx.createLinearGradient(0, 0, 0, 200);
-        gradientRam.addColorStop(0, "rgba(14, 165, 233, 0.4)");
-        gradientRam.addColorStop(1, "rgba(14, 165, 233, 0.0)");
+    if (nodeNetworkCanvas && typeof Chart !== "undefined") {
+        const ctx = nodeNetworkCanvas.getContext("2d");
 
-        new Chart(ctx, {
+        // Inbound / RX Gradient (Sky Blue)
+        const gradientRx = ctx.createLinearGradient(0, 0, 0, 220);
+        gradientRx.addColorStop(0, "rgba(14, 165, 233, 0.35)");
+        gradientRx.addColorStop(1, "rgba(14, 165, 233, 0.0)");
+
+        // Outbound / TX Gradient (Purple)
+        const gradientTx = ctx.createLinearGradient(0, 0, 0, 220);
+        gradientTx.addColorStop(0, "rgba(168, 85, 247, 0.35)");
+        gradientTx.addColorStop(1, "rgba(168, 85, 247, 0.0)");
+
+        const MAX_POINTS = 16;
+
+        const networkChart = new Chart(ctx, {
             type: "line",
             data: {
-                labels: ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"],
+                labels: [],
                 datasets: [
                     {
-                        label: "CPU (%)",
-                        data: [35, 25, 45, 75, 60, 40],
-                        borderColor: "#4f46e5",
-                        backgroundColor: gradientCpu,
+                        label: "RX Inbound (KB/s)",
+                        data: [],
+                        borderColor: "#0ea5e9",
+                        backgroundColor: gradientRx,
                         borderWidth: 2,
-                        tension: 0.3,
+                        tension: 0.35,
                         fill: true,
-                        pointRadius: 2,
+                        pointRadius: 2.5,
                         pointHoverRadius: 5,
+                        pointBackgroundColor: "#0ea5e9",
                     },
                     {
-                        label: "RAM (%)",
-                        data: [45, 40, 55, 65, 70, 60],
-                        borderColor: "#0ea5e9",
-                        backgroundColor: gradientRam,
+                        label: "TX Outbound (KB/s)",
+                        data: [],
+                        borderColor: "#a855f7",
+                        backgroundColor: gradientTx,
                         borderWidth: 2,
-                        tension: 0.3,
+                        tension: 0.35,
                         fill: true,
-                        pointRadius: 2,
+                        pointRadius: 2.5,
                         pointHoverRadius: 5,
+                        pointBackgroundColor: "#a855f7",
                     },
                 ],
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: { duration: 400 },
                 plugins: {
                     legend: {
                         position: "top",
                         align: "end",
-                        labels: { boxWidth: 8, font: { size: 10 } },
+                        labels: {
+                            boxWidth: 10,
+                            font: { size: 11, weight: "500" },
+                            padding: 12,
+                        },
                     },
                     tooltip: {
                         mode: "index",
@@ -1055,25 +1073,122 @@ document.addEventListener("DOMContentLoaded", () => {
                         padding: 8,
                         titleFont: { size: 11 },
                         bodyFont: { size: 11 },
+                        callbacks: {
+                            label: function (context) {
+                                return ` ${context.dataset.label}: ${context.parsed.y.toFixed(1)} KB/s`;
+                            },
+                        },
                     },
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { font: { size: 10 } },
+                        ticks: { font: { size: 10 }, maxRotation: 0 },
                     },
                     y: {
-                        grid: { borderDash: [3, 3] },
+                        beginAtZero: true,
+                        grid: { borderDash: [3, 3], color: "rgba(0,0,0,0.06)" },
                         ticks: {
                             font: { size: 10 },
-                            stepSize: 25,
-                            max: 100,
-                            min: 0,
+                            callback: function (value) {
+                                return value >= 1024 ? (value / 1024).toFixed(1) + " MB/s" : value + " KB/s";
+                            },
                         },
                     },
                 },
                 interaction: { mode: "nearest", axis: "x", intersect: false },
             },
+        });
+
+        let pollInterval = null;
+        let isFetching = false;
+
+        const fetchTrafficData = async () => {
+            if (isFetching) return;
+            isFetching = true;
+
+            const selectedOption = nodeNetworkSelect?.options[nodeNetworkSelect.selectedIndex];
+            const nodeName = selectedOption?.value || "pve-01";
+            const nodeIp = selectedOption?.getAttribute("data-ip") || "";
+
+            try {
+                const query = nodeIp ? `?ip=${encodeURIComponent(nodeIp)}` : "";
+                const res = await fetch(`/api/nodes/${encodeURIComponent(nodeName)}/network-traffic${query}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+
+                if (data && data.success) {
+                    // Update header badges
+                    if (networkRxVal) networkRxVal.textContent = data.rx_formatted || `${data.rx_rate_kbps} KB/s`;
+                    if (networkTxVal) networkTxVal.textContent = data.tx_formatted || `${data.tx_rate_kbps} KB/s`;
+
+                    if (networkSourceText && data.source_label) {
+                        networkSourceText.textContent = data.source_label;
+                    }
+
+                    if (networkSourceBadge) {
+                        if (data.is_real_api) {
+                            networkSourceBadge.className = "badge bg-success-light text-success";
+                        } else {
+                            networkSourceBadge.className = "badge bg-warning-light text-warning";
+                        }
+                    }
+
+                    // Handle initial historical points from Proxmox RRD if present and chart is empty
+                    if (data.history && Array.isArray(data.history.labels) && data.history.labels.length > 0 && networkChart.data.labels.length === 0) {
+                        networkChart.data.labels = data.history.labels.slice(-MAX_POINTS);
+                        networkChart.data.datasets[0].data = data.history.rx.slice(-MAX_POINTS);
+                        networkChart.data.datasets[1].data = data.history.tx.slice(-MAX_POINTS);
+                    } else {
+                        // Push new real-time point
+                        const timeLabel = data.timestamp || new Date().toLocaleTimeString("id-ID", { hour12: false });
+                        networkChart.data.labels.push(timeLabel);
+                        networkChart.data.datasets[0].data.push(data.rx_rate_kbps || 0);
+                        networkChart.data.datasets[1].data.push(data.tx_rate_kbps || 0);
+
+                        if (networkChart.data.labels.length > MAX_POINTS) {
+                            networkChart.data.labels.shift();
+                            networkChart.data.datasets[0].data.shift();
+                            networkChart.data.datasets[1].data.shift();
+                        }
+                    }
+
+                    networkChart.update();
+                }
+            } catch (err) {
+                console.warn("Gagal memuat telemetri trafik jaringan node:", err);
+            } finally {
+                isFetching = false;
+            }
+        };
+
+        // Reset and fetch immediately when switching node
+        const onNodeChanged = () => {
+            networkChart.data.labels = [];
+            networkChart.data.datasets[0].data = [];
+            networkChart.data.datasets[1].data = [];
+            networkChart.update();
+            if (networkRxVal) networkRxVal.textContent = "Mengambil...";
+            if (networkTxVal) networkTxVal.textContent = "Mengambil...";
+            fetchTrafficData();
+        };
+
+        if (nodeNetworkSelect) {
+            nodeNetworkSelect.addEventListener("change", onNodeChanged);
+        }
+
+        // Initial fetch and start polling every 3.5 seconds
+        fetchTrafficData();
+        pollInterval = setInterval(fetchTrafficData, 3500);
+
+        // Pause polling when browser tab is inactive to preserve bandwidth and battery
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                if (pollInterval) clearInterval(pollInterval);
+            } else {
+                fetchTrafficData();
+                pollInterval = setInterval(fetchTrafficData, 3500);
+            }
         });
     }
 

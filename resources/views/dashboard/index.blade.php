@@ -23,7 +23,8 @@
                     <div class="stat-icon bg-blue"><i class="ph ph-hard-drive"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success"><i class="ph ph-check-circle"></i> {{ $onlineNodes ?? 0 }} Node Online</span>
+                    <span class="text-success"><i class="ph ph-check-circle"></i> {{ $onlineNodes ?? 0 }} Node
+                        Online</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -35,7 +36,8 @@
                     <div class="stat-icon bg-purple"><i class="ph ph-desktop"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success">{{ $activeVms ?? 0 }} Aktif</span> &bull; <span class="text-danger">{{ $inactiveVms ?? 0 }} Nonaktif</span>
+                    <span class="text-success">{{ $activeVms ?? 0 }} Aktif</span> &bull; <span
+                        class="text-danger">{{ $inactiveVms ?? 0 }} Nonaktif</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -47,7 +49,8 @@
                     <div class="stat-icon bg-orange"><i class="ph ph-box-arrow-down"></i></div>
                 </div>
                 <div class="stat-footer">
-                    <span class="text-success">{{ $activeLxc ?? 0 }} Aktif</span> &bull; <span class="text-danger">{{ $inactiveLxc ?? 0 }} Nonaktif</span>
+                    <span class="text-success">{{ $activeLxc ?? 0 }} Aktif</span> &bull; <span
+                        class="text-danger">{{ $inactiveLxc ?? 0 }} Nonaktif</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -62,7 +65,8 @@
                     <div class="progress-bar-container">
                         <div class="progress-bar bg-green" style="width: {{ min($usagePercent ?? 0, 100) }}%;"></div>
                     </div>
-                    <span class="text-muted mt-1 d-block">Teralokasi {{ round(($totalAllocatedDiskGb ?? 0) / 1000, 1) }} TB ({{ $usagePercent ?? 0 }}%)</span>
+                    <span class="text-muted mt-1 d-block">Teralokasi
+                        {{ round(($totalAllocatedDiskGb ?? 0) / 1000, 1) }} TB ({{ $usagePercent ?? 0 }}%)</span>
                 </div>
             </div>
         </div>
@@ -72,26 +76,37 @@
             <!-- Beban Alokasi Node -->
             <div class="card col-span-1">
                 <div class="card-header flex-between">
-                    <h3 class="card-title" style="display: flex; align-items: center; gap: 0.4rem;"><i class="ph ph-cpu"></i> Beban Alokasi Node</h3>
-                    <span class="badge bg-purple-light text-purple" style="font-size: 0.72rem;">{{ $totalNodes ?? 0 }} Node</span>
+                    <h3 class="card-title" style="display: flex; align-items: center; gap: 0.4rem;"><i
+                            class="ph ph-cpu"></i> Beban Alokasi Node</h3>
+                    <span class="badge bg-purple-light text-purple" style="font-size: 0.72rem;">{{ $totalNodes ?? 0 }}
+                        Node</span>
                 </div>
                 <div class="card-body" style="padding: 0.9rem 1.1rem;">
-                    <div class="node-load-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 290px; overflow-y: auto; padding-right: 0.25rem;">
+                    <div class="node-load-list"
+                        style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 290px; overflow-y: auto; padding-right: 0.25rem;">
                         @forelse ($nodeLoads ?? [] as $node)
                             <div class="node-load-item">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; font-size: 0.82rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; font-size: 0.82rem;">
                                     <div style="display: flex; align-items: center; gap: 0.4rem;">
-                                        <span class="status-dot" style="width: 7px; height: 7px; border-radius: 50%; display: inline-block; background-color: {{ $node->status === 'Online' ? 'var(--success)' : 'var(--danger)' }};"></span>
-                                        <a href="{{ route('nodes.show', $node->id) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">{{ $node->nama_server }}</a>
-                                        <span class="text-muted" style="font-size: 0.75rem;">({{ $node->vm_count }} VM)</span>
+                                        <span class="status-dot"
+                                            style="width: 7px; height: 7px; border-radius: 50%; display: inline-block; background-color: {{ $node->status === 'Online' ? 'var(--success)' : 'var(--danger)' }};"></span>
+                                        <a href="{{ route('nodes.show', $node->id) }}"
+                                            style="font-weight: 600; color: var(--text-main); text-decoration: none;">{{ $node->nama_server }}</a>
+                                        <span class="text-muted" style="font-size: 0.75rem;">({{ $node->vm_count }}
+                                            VM)</span>
                                     </div>
-                                    <span style="font-size: 0.78rem; font-weight: 500;" class="{{ $node->badge_class }}">
+                                    <span style="font-size: 0.78rem; font-weight: 500;"
+                                        class="{{ $node->badge_class }}">
                                         {{ $node->ram_used }} / {{ $node->kapasitas_ram }} GB
                                         <span style="font-weight: 600;">({{ $node->ram_pct }}%)</span>
                                     </span>
                                 </div>
-                                <div class="progress-bar-container" style="height: 6px; background: rgba(0,0,0,0.06); border-radius: 999px; overflow: hidden;">
-                                    <div class="progress-bar" style="width: {{ min($node->ram_pct, 100) }}%; height: 100%; {{ $node->bar_style }} border-radius: 999px;"></div>
+                                <div class="progress-bar-container"
+                                    style="height: 6px; background: rgba(0,0,0,0.06); border-radius: 999px; overflow: hidden;">
+                                    <div class="progress-bar"
+                                        style="width: {{ min($node->ram_pct, 100) }}%; height: 100%; {{ $node->bar_style }} border-radius: 999px;">
+                                    </div>
                                 </div>
                             </div>
                         @empty
@@ -105,7 +120,8 @@
             <div class="card ai-card col-span-2">
                 <div class="card-header ai-header">
                     <h3 class="card-title"><i class="ph-fill ph-sparkle"></i> Analisis AI Agent</h3>
-                    <button class="btn btn-xs btn-primary" id="refreshAiInsightsBtn" title="Kirim snapshot database ke OpenClaw untuk dianalisis">
+                    <button class="btn btn-xs btn-primary" id="refreshAiInsightsBtn"
+                        title="Kirim snapshot database ke OpenClaw untuk dianalisis">
                         <i class="ph ph-sparkle" id="refreshAiInsightsIcon"></i>
                         <span id="aiAnalysisStatusText">Analisis AI Sekarang</span>
                     </button>
@@ -123,13 +139,13 @@
                                 @forelse ($aiInsights ?? [] as $insight)
                                     @php
                                         $level = $insight['level'] ?? 'info';
-                                        $badgeClass = match($level) {
+                                        $badgeClass = match ($level) {
                                             'danger' => 'bg-danger-light text-danger',
                                             'warning' => 'bg-warning-light text-warning',
                                             'success' => 'bg-success-light text-success',
                                             default => 'bg-info-light text-info',
                                         };
-                                        $icon = match($level) {
+                                        $icon = match ($level) {
                                             'danger' => 'ph-warning-octagon',
                                             'warning' => 'ph-warning',
                                             'success' => 'ph-check-circle',
@@ -139,7 +155,8 @@
                                     <tr>
                                         <td>
                                             <span class="badge {{ $badgeClass }}">
-                                                <i class="ph {{ $icon }}"></i> {{ $insight['badge'] ?? ucfirst($level) }}
+                                                <i class="ph {{ $icon }}"></i>
+                                                {{ $insight['badge'] ?? ucfirst($level) }}
                                             </span>
                                         </td>
                                         <td class="insight-content-cell">
@@ -150,12 +167,72 @@
                                 @empty
                                     <tr>
                                         <td colspan="2" class="text-center text-muted py-3">
-                                            Belum ada insight aktif. Klik tombol <strong>Analisis AI Sekarang</strong> di atas.
+                                            Belum ada insight aktif. Klik tombol <strong>Analisis AI Sekarang</strong>
+                                            di atas.
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Trafik Jaringan Node (Real-time Proxmox VE) -->
+            <div class="card col-span-3">
+                <div class="card-header flex-between flex-wrap gap-2" style="padding: 0.85rem 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <div class="stat-icon bg-blue"
+                            style="width: 34px; height: 34px; font-size: 1.05rem; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i class="ph ph-arrows-down-up"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 600;">Monitoring
+                                Trafik Jaringan Node</h3>
+                            <small class="text-muted" style="font-size: 0.73rem;">Telemetri throughput antarmuka
+                                jaringan fisik & virtual bridge Proxmox VE</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                        <!-- Throughput Badges -->
+                        <div style="display: flex; gap: 0.45rem;">
+                            <span class="badge bg-info-light text-info" id="networkRxBadge"
+                                style="font-size: 0.74rem; padding: 0.28rem 0.6rem; font-weight: 500;">
+                                <i class="ph ph-arrow-down-right"></i> RX (Inbound): <strong id="networkRxVal">0.0
+                                    KB/s</strong>
+                            </span>
+                            <span class="badge bg-purple-light text-purple" id="networkTxBadge"
+                                style="font-size: 0.74rem; padding: 0.28rem 0.6rem; font-weight: 500;">
+                                <i class="ph ph-arrow-up-right"></i> TX (Outbound): <strong id="networkTxVal">0.0
+                                    KB/s</strong>
+                            </span>
+                        </div>
+                        <!-- Node Selector -->
+                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                            <label for="nodeNetworkSelect" class="text-xs text-muted" style="font-weight: 500;">Pilih
+                                Node:</label>
+                            <select id="nodeNetworkSelect" class="select-sm"
+                                style="font-size: 0.78rem; padding: 0.28rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                                @foreach ($nodes ?? [] as $nodeItem)
+                                    <option value="{{ $nodeItem->nama_server }}"
+                                        data-ip="{{ $nodeItem->alamat_ip }}" {{ $loop->first ? 'selected' : '' }}>
+                                        {{ $nodeItem->nama_server }} ({{ $nodeItem->alamat_ip ?: 'PVE' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Source / Status Pill -->
+                        <span class="badge bg-success-light text-success" id="networkSourceBadge"
+                            style="font-size: 0.72rem; padding: 0.28rem 0.55rem;">
+                            <span class="status-dot"
+                                style="background: var(--success); width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 0.25rem;"></span>
+                            <span id="networkSourceText">Proxmox API</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 1rem 1.25rem; position: relative;">
+                    <div style="height: 230px; width: 100%; position: relative;">
+                        <canvas id="nodeNetworkChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -210,12 +287,16 @@
                                         <td><input type="checkbox" class="checkbox"></td>
                                         <td><strong>{{ $vm->id }}</strong></td>
                                         <td>{{ $vm->hostname }}</td>
-                                        <td><span class="badge bg-purple-light text-purple">{{ $vm->fungsi_layanan }}</span></td>
+                                        <td><span
+                                                class="badge bg-purple-light text-purple">{{ $vm->fungsi_layanan }}</span>
+                                        </td>
                                         <td>
                                             @if ($vm->status === 'Running')
-                                                <span class="status-badge success"><span class="dot"></span>Aktif</span>
+                                                <span class="status-badge success"><span
+                                                        class="dot"></span>Aktif</span>
                                             @else
-                                                <span class="status-badge danger"><span class="dot"></span>Nonaktif</span>
+                                                <span class="status-badge danger"><span
+                                                        class="dot"></span>Nonaktif</span>
                                             @endif
                                         </td>
                                         <td>{{ $vm->serverFisik->nama_server ?? '-' }}</td>
@@ -225,7 +306,8 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted py-3">Belum ada data VM / Kontainer.</td>
+                                        <td colspan="9" class="text-center text-muted py-3">Belum ada data VM /
+                                            Kontainer.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -233,9 +315,12 @@
                     </div>
                 </div>
                 <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="pagination-info">Menampilkan {{ isset($vms) && $vms->count() ? $vms->firstItem() . '-' . $vms->lastItem() . ' dari ' . $vms->total() : '0' }} data aset</div>
+                    <div class="pagination-info">Menampilkan
+                        {{ isset($vms) && $vms->count() ? $vms->firstItem() . '-' . $vms->lastItem() . ' dari ' . $vms->total() : '0' }}
+                        data aset</div>
                     <div class="pagination">
-                        <a href="{{ route('vps.index') }}" class="btn btn-sm btn-outline">Lihat Semua di Buku Inventaris &rarr;</a>
+                        <a href="{{ route('vps.index') }}" class="btn btn-sm btn-outline">Lihat Semua di Buku
+                            Inventaris &rarr;</a>
                     </div>
                 </div>
             </div>
@@ -302,4 +387,3 @@
     </div>
 
 </x-layouts.app>
-
